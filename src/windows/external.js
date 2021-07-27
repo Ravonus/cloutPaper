@@ -18,9 +18,9 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const electron_1 = require("electron");
 const querystring_1 = __importDefault(require("querystring"));
-// let data = JSON.parse(query['?data']);
 const { BrowserWindow, screen } = electron_1.remote;
-let firstRun = true;
+const query = querystring_1.default.parse(global.location.search);
+const displayIndex = query.displayIndex;
 function wait(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -48,10 +48,11 @@ function findWebview(displays) {
         }
         // webview.openDevTools();
         electron_1.ipcRenderer.on('mouseup', (event, result) => {
-            const { x, y } = result;
-            console.log('MOSUE UP', result);
+            let { x, y } = result;
+            x = x - 2560;
+            console.log('MOUSE Up', result);
             webview.sendInputEvent({
-                type: 'mouseUp',
+                type: 'mouseup',
                 x,
                 y,
                 button: 'left',
@@ -59,10 +60,10 @@ function findWebview(displays) {
             });
         });
         electron_1.ipcRenderer.on('mousedown', (event, result) => {
-            const { x, y } = result;
+            let { x, y } = result;
             console.log('MOUSE DOWN', result);
             webview.sendInputEvent({
-                type: 'mouseDown',
+                type: 'mousedown',
                 x,
                 y,
                 button: 'left',
@@ -86,7 +87,6 @@ function findWebview(displays) {
         });
         electron_1.ipcRenderer.on('mousemove', (event, result) => {
             const { x, y } = result;
-            console.log('MOSUE MOVE', result);
             webview.sendInputEvent({
                 type: 'mousemove',
                 x,
@@ -94,24 +94,22 @@ function findWebview(displays) {
             });
         });
         // webview.style.width = '1'
-        webview.style.width = `${displays[0].size.width}px`;
-        webview.style.height = `${displays[0].size.height}px`;
+        webview.style.width = `${displays[displayIndex].size.width}px`;
+        webview.style.height = `${displays[displayIndex].size.height}px`;
     });
 }
-let query = querystring_1.default.parse(global.location.search);
 const External = () => {
     const [site, setSite] = react_1.useState(query['?url']);
     const displays = screen.getAllDisplays();
-    console.log('I AM THE SITE', site);
-    electron_1.ipcRenderer.on('setWallpaper', (event, result) => {
-        console.log(result);
-        setSite(result);
-        electron_1.remote.getCurrentWindow().reload();
-    });
+    // ipcRenderer.on('setWallpaper', (event, result) => {
+    //   console.log(result);
+    //   setSite(result);
+    //   remote.getCurrentWindow().reload();
+    // });
     react_1.useEffect(() => {
         findWebview(displays);
     });
-    return (jsx_runtime_1.jsx(jsx_runtime_1.Fragment, { children: jsx_runtime_1.jsx("webview", { id: 'foo', src: site }, void 0) }, void 0));
+    return jsx_runtime_1.jsx("webview", { id: 'foo', src: site }, void 0);
 };
 exports.External = External;
 exports.default = exports.External;

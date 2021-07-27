@@ -38,7 +38,7 @@ const AddUrl = ({ darkmode }) => {
                         const value = document.getElementById('url')
                             .value;
                         console.log('VALUE');
-                        renderer_1.ipcRenderer.invoke('setWallpaper', value);
+                        renderer_1.ipcRenderer.invoke('setWallpaper', { url: value, display: i });
                         // ipcRenderer.send(
                         //   'setWallpaper',
                         //   'http://html5wallpaper.com/wp-depo/800/'

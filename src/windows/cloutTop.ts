@@ -13,13 +13,82 @@ import keycode from 'keycode';
 
 interface WallpaperProps {}
 
-let url = 'http://html5wallpaper.com/wp-depo/264/';
+interface BrowserWindowExtended extends BrowserWindow {
+  displayId?: number;
+}
+
+const displays = screen.getAllDisplays();
 
 function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+function grabWindowByDisplayId(
+  display: Electron.Display,
+  adjustedPoint: Electron.Point
+) {
+  let index = 0;
+  let { x, y } = adjustedPoint;
+  let found = false;
+  displayWindows.map((window, i) => {
+    if (window.displayId === display.id) {
+      index = i;
+      found = true;
+    } else if (!found) {
+      const size = window.getSize();
+
+      x = x - size[0];
+    }
+  });
+
+  return { window: displayWindows[index], point: { x, y } };
+}
+
+function grabDisplay() {
+  const adjustedPoint = screen.getCursorScreenPoint();
+  const mousePointerDisplay = screen.getDisplayNearestPoint(adjustedPoint);
+
+  return { mousePointerDisplay, adjustedPoint };
+}
+
+const displayWindows: BrowserWindowExtended[] = [];
+
 export default () => {
+  displays.map((display, i) => {
+    let window: null | BrowserWindowExtended = new BrowserWindow({
+      webPreferences: {
+        nodeIntegrationInSubFrames: true,
+        webviewTag: true,
+
+        nodeIntegration: true,
+        enableRemoteModule: true,
+        contextIsolation: false,
+        webSecurity: false,
+      },
+      fullscreen: true,
+      type: 'desktop',
+      transparent: true,
+      frame: false,
+    });
+
+    window.setBounds(display.bounds);
+    window.setKiosk(true);
+    //window.webContents.openDevTools();
+    window.webContents.on('did-navigate', () => {
+      setTimeout(() => {
+        wallpaper.attachWindow(window);
+      }, 100);
+    });
+    let url = 'http://html5wallpaper.com/wp-depo/264/';
+    window?.loadURL(
+      `file://${__dirname}/index.html?url=${url}&displayIndex=${i}`
+    );
+
+    window.displayId = display.id;
+
+    displayWindows.push(window);
+  });
+
   let mainWindow: null | BrowserWindow = new BrowserWindow({
     webPreferences: {
       nodeIntegrationInSubFrames: true,
@@ -36,82 +105,76 @@ export default () => {
     frame: false,
   });
 
-  const cdir = path.join(__dirname, '../renderer/', 'child/');
-
-  // setTimeout(() => {
-  //   child?.loadURL(`file://${cdir}index.html`);
-  // }, 20000);
-
-  // let child = new BrowserWindow({
-  //   type: 'desktop',
-  //   transparent: true,
-  //   frame: false,
-  //   fullscreen: true,
-  //   webPreferences: {
-  //     nodeIntegrationInSubFrames: true,
-  //     webviewTag: true,
-  //     nodeIntegration: true,
-  //     enableRemoteModule: true,
-  //     contextIsolation: false,
-  //     webSecurity: false,
-  //   },
-  // });
-
-  // child.show();
-
-  //mainWindow.setIgnoreMouseEvents(true);
-
   //mainWindow.webContents.openDevTools();
 
-  ipcMain.on('wpClick', (e, css) => {});
-
   const dir = path.join(__dirname, '../renderer/', 'wallpaper/');
+  let url = 'http://html5wallpaper.com/wp-depo/264/';
 
-  mainWindow.setKiosk(true);
-
-  mainWindow.webContents.openDevTools();
-
-  // ipcMain.handle('windows', async () => {
-  //   console.log('LOGs');
-  //   const result = mainWindow;
-  //   console.log('WINDW', result);
-  //   return result;
-  // });
-
-  ipcMain.handle('setWallpaper', (event, newUrl) => {
-    mainWindow?.loadURL(`file://${__dirname}/index.html?url=${newUrl}`);
-
-    return true;
-  });
-
+  mainWindow.hide();
   mainWindow.webContents.on('did-navigate', () => {
     setTimeout(() => {
       wallpaper.attachWindow(mainWindow);
     }, 100);
   });
 
-  mainWindow?.loadURL(`file://${__dirname}/index.html?url=${url}`);
+  ipcMain.handle('setWallpaper', (event, { url, display }) => {
+    displayWindows[display]?.loadURL(
+      `file://${__dirname}/index.html?url=${url}&displayIndex=${display}`
+    );
+
+    return true;
+  });
 
   globalKeys.on('mousemove', (event: any) => {
-    mainWindow?.webContents.send('mousemove', screen.getCursorScreenPoint());
+    const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+
+    const { window, point } = grabWindowByDisplayId(
+      mousePointerDisplay,
+      adjustedPoint
+    );
+
+    window?.webContents.send('mousemove', point);
   });
 
   globalKeys.on('mousedrag', (event: any) => {
-    mainWindow?.webContents.send('mousemove', screen.getCursorScreenPoint());
+    const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+
+    const { window, point } = grabWindowByDisplayId(
+      mousePointerDisplay,
+      adjustedPoint
+    );
+    window?.webContents.send('mousemove', point);
   });
 
   globalKeys.on('mouseup', (event: any) => {
-    if (event.button === 1)
-      mainWindow?.webContents.send('mouseup', screen.getCursorScreenPoint());
+    if (event.button === 1) {
+      const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+
+      const { window, point } = grabWindowByDisplayId(
+        mousePointerDisplay,
+        adjustedPoint
+      );
+
+      window?.webContents.send('mouseup', point);
+    }
   });
 
   globalKeys.on('mousedown', (event: any) => {
-    if (event.button === 1)
-      mainWindow?.webContents.send('mousedown', screen.getCursorScreenPoint());
+    if (event.button === 1) {
+      const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+
+      const { window, point } = grabWindowByDisplayId(
+        mousePointerDisplay,
+        adjustedPoint
+      );
+      window.getPosition;
+
+      window?.webContents.send('mousedown', point);
+    }
   });
 
   // globalKeys.on('keyup', (event: any) => {
-  //   console.log(event);
+
   //   // mainWindow?.webContents.sendInputEvent({
   //   //   type: 'keyUp',
   //   //   keyCode: event.keycode,
@@ -121,10 +184,14 @@ export default () => {
   // });
 
   globalKeys.on('keydown', (event: any) => {
-    console.log(event);
+    const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+
+    const { window } = grabWindowByDisplayId(
+      mousePointerDisplay,
+      adjustedPoint
+    );
 
     try {
-      console.log(keycode(event.rawcode).length);
       let key =
         keycode(event.rawcode).length > 1
           ? capitalizeFirstLetter(keycode(event.rawcode))
@@ -132,15 +199,10 @@ export default () => {
 
       if (key === 'Space') key = ' ';
 
-      mainWindow?.webContents.send('keydown', key);
+      window?.webContents.send('keydown', key);
     } catch (e) {
       console.log(e);
     }
-
-    // mainWindow?.webContents.sendInputEvent({
-    //   type: 'keyDown',
-    //   keyCode: event.keycode,
-    // });
   });
 
   //Register and start hook

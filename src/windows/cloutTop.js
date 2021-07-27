@@ -14,11 +14,61 @@ const path_1 = __importDefault(require("path"));
 const electron_wallpaper_napi_1 = __importDefault(require("electron-wallpaper-napi"));
 const iohook_1 = __importDefault(require("iohook"));
 const keycode_1 = __importDefault(require("keycode"));
-let url = 'http://html5wallpaper.com/wp-depo/264/';
+const displays = electron_1.screen.getAllDisplays();
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+function grabWindowByDisplayId(display, adjustedPoint) {
+    let index = 0;
+    let { x, y } = adjustedPoint;
+    let found = false;
+    displayWindows.map((window, i) => {
+        if (window.displayId === display.id) {
+            index = i;
+            found = true;
+        }
+        else if (!found) {
+            const size = window.getSize();
+            x = x - size[0];
+        }
+    });
+    return { window: displayWindows[index], point: { x, y } };
+}
+function grabDisplay() {
+    const adjustedPoint = electron_1.screen.getCursorScreenPoint();
+    const mousePointerDisplay = electron_1.screen.getDisplayNearestPoint(adjustedPoint);
+    return { mousePointerDisplay, adjustedPoint };
+}
+const displayWindows = [];
 exports.default = () => {
+    displays.map((display, i) => {
+        let window = new electron_1.BrowserWindow({
+            webPreferences: {
+                nodeIntegrationInSubFrames: true,
+                webviewTag: true,
+                nodeIntegration: true,
+                enableRemoteModule: true,
+                contextIsolation: false,
+                webSecurity: false,
+            },
+            fullscreen: true,
+            type: 'desktop',
+            transparent: true,
+            frame: false,
+        });
+        window.setBounds(display.bounds);
+        window.setKiosk(true);
+        //window.webContents.openDevTools();
+        window.webContents.on('did-navigate', () => {
+            setTimeout(() => {
+                electron_wallpaper_napi_1.default.attachWindow(window);
+            }, 100);
+        });
+        let url = 'http://html5wallpaper.com/wp-depo/264/';
+        window === null || window === void 0 ? void 0 : window.loadURL(`file://${__dirname}/index.html?url=${url}&displayIndex=${i}`);
+        window.displayId = display.id;
+        displayWindows.push(window);
+    });
     let mainWindow = new electron_1.BrowserWindow({
         webPreferences: {
             nodeIntegrationInSubFrames: true,
@@ -33,63 +83,46 @@ exports.default = () => {
         transparent: true,
         frame: false,
     });
-    const cdir = path_1.default.join(__dirname, '../renderer/', 'child/');
-    // setTimeout(() => {
-    //   child?.loadURL(`file://${cdir}index.html`);
-    // }, 20000);
-    // let child = new BrowserWindow({
-    //   type: 'desktop',
-    //   transparent: true,
-    //   frame: false,
-    //   fullscreen: true,
-    //   webPreferences: {
-    //     nodeIntegrationInSubFrames: true,
-    //     webviewTag: true,
-    //     nodeIntegration: true,
-    //     enableRemoteModule: true,
-    //     contextIsolation: false,
-    //     webSecurity: false,
-    //   },
-    // });
-    // child.show();
-    //mainWindow.setIgnoreMouseEvents(true);
     //mainWindow.webContents.openDevTools();
-    electron_1.ipcMain.on('wpClick', (e, css) => { });
     const dir = path_1.default.join(__dirname, '../renderer/', 'wallpaper/');
-    mainWindow.setKiosk(true);
-    mainWindow.webContents.openDevTools();
-    // ipcMain.handle('windows', async () => {
-    //   console.log('LOGs');
-    //   const result = mainWindow;
-    //   console.log('WINDW', result);
-    //   return result;
-    // });
-    electron_1.ipcMain.handle('setWallpaper', (event, newUrl) => {
-        mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.loadURL(`file://${__dirname}/index.html?url=${newUrl}`);
-        return true;
-    });
+    let url = 'http://html5wallpaper.com/wp-depo/264/';
+    mainWindow.hide();
     mainWindow.webContents.on('did-navigate', () => {
         setTimeout(() => {
             electron_wallpaper_napi_1.default.attachWindow(mainWindow);
         }, 100);
     });
-    mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.loadURL(`file://${__dirname}/index.html?url=${url}`);
+    electron_1.ipcMain.handle('setWallpaper', (event, { url, display }) => {
+        var _a;
+        (_a = displayWindows[display]) === null || _a === void 0 ? void 0 : _a.loadURL(`file://${__dirname}/index.html?url=${url}&displayIndex=${display}`);
+        return true;
+    });
     iohook_1.default.on('mousemove', (event) => {
-        mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.webContents.send('mousemove', electron_1.screen.getCursorScreenPoint());
+        const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+        const { window, point } = grabWindowByDisplayId(mousePointerDisplay, adjustedPoint);
+        window === null || window === void 0 ? void 0 : window.webContents.send('mousemove', point);
     });
     iohook_1.default.on('mousedrag', (event) => {
-        mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.webContents.send('mousemove', electron_1.screen.getCursorScreenPoint());
+        const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+        const { window, point } = grabWindowByDisplayId(mousePointerDisplay, adjustedPoint);
+        window === null || window === void 0 ? void 0 : window.webContents.send('mousemove', point);
     });
     iohook_1.default.on('mouseup', (event) => {
-        if (event.button === 1)
-            mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.webContents.send('mouseup', electron_1.screen.getCursorScreenPoint());
+        if (event.button === 1) {
+            const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+            const { window, point } = grabWindowByDisplayId(mousePointerDisplay, adjustedPoint);
+            window === null || window === void 0 ? void 0 : window.webContents.send('mouseup', point);
+        }
     });
     iohook_1.default.on('mousedown', (event) => {
-        if (event.button === 1)
-            mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.webContents.send('mousedown', electron_1.screen.getCursorScreenPoint());
+        if (event.button === 1) {
+            const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+            const { window, point } = grabWindowByDisplayId(mousePointerDisplay, adjustedPoint);
+            window.getPosition;
+            window === null || window === void 0 ? void 0 : window.webContents.send('mousedown', point);
+        }
     });
     // globalKeys.on('keyup', (event: any) => {
-    //   console.log(event);
     //   // mainWindow?.webContents.sendInputEvent({
     //   //   type: 'keyUp',
     //   //   keyCode: event.keycode,
@@ -97,23 +130,19 @@ exports.default = () => {
     //   mainWindow?.webContents.send('keyup', event);
     // });
     iohook_1.default.on('keydown', (event) => {
-        console.log(event);
+        const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+        const { window } = grabWindowByDisplayId(mousePointerDisplay, adjustedPoint);
         try {
-            console.log(keycode_1.default(event.rawcode).length);
             let key = keycode_1.default(event.rawcode).length > 1
                 ? capitalizeFirstLetter(keycode_1.default(event.rawcode))
                 : keycode_1.default(event.rawcode);
             if (key === 'Space')
                 key = ' ';
-            mainWindow === null || mainWindow === void 0 ? void 0 : mainWindow.webContents.send('keydown', key);
+            window === null || window === void 0 ? void 0 : window.webContents.send('keydown', key);
         }
         catch (e) {
             console.log(e);
         }
-        // mainWindow?.webContents.sendInputEvent({
-        //   type: 'keyDown',
-        //   keyCode: event.keycode,
-        // });
     });
     //Register and start hook
     iohook_1.default.start(false);

@@ -7,11 +7,13 @@ import querystring from 'querystring';
 
 // let data = JSON.parse(query['?data']);
 
-const { BrowserWindow, screen } = remote;
-
 interface ExternalProps {}
 
-let firstRun = true;
+const { BrowserWindow, screen } = remote;
+
+const query: any = querystring.parse(global.location.search);
+
+const displayIndex: number = query.displayIndex;
 
 export function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -51,12 +53,14 @@ async function findWebview(displays: any) {
   // webview.openDevTools();
 
   ipcRenderer.on('mouseup', (event, result) => {
-    const { x, y } = result;
+    let { x, y } = result;
 
-    console.log('MOSUE UP', result);
+    x = x - 2560;
+
+    console.log('MOUSE Up', result);
 
     webview.sendInputEvent({
-      type: 'mouseUp',
+      type: 'mouseup',
       x,
       y,
       button: 'left',
@@ -65,12 +69,12 @@ async function findWebview(displays: any) {
   });
 
   ipcRenderer.on('mousedown', (event, result) => {
-    const { x, y } = result;
+    let { x, y } = result;
 
     console.log('MOUSE DOWN', result);
 
     webview.sendInputEvent({
-      type: 'mouseDown',
+      type: 'mousedown',
       x,
       y,
       button: 'left',
@@ -99,8 +103,6 @@ async function findWebview(displays: any) {
   ipcRenderer.on('mousemove', (event, result) => {
     const { x, y } = result;
 
-    console.log('MOSUE MOVE', result);
-
     webview.sendInputEvent({
       type: 'mousemove',
       x,
@@ -109,33 +111,25 @@ async function findWebview(displays: any) {
   });
 
   // webview.style.width = '1'
-  webview.style.width = `${displays[0].size.width}px`;
-  webview.style.height = `${displays[0].size.height}px`;
+  webview.style.width = `${displays[displayIndex].size.width}px`;
+  webview.style.height = `${displays[displayIndex].size.height}px`;
 }
-
-let query: any = querystring.parse(global.location.search);
 
 export const External: FC<ExternalProps> = () => {
   const [site, setSite] = useState(query['?url']);
   const displays = screen.getAllDisplays();
 
-  console.log('I AM THE SITE', site);
-
-  ipcRenderer.on('setWallpaper', (event, result) => {
-    console.log(result);
-    setSite(result);
-    remote.getCurrentWindow().reload();
-  });
+  // ipcRenderer.on('setWallpaper', (event, result) => {
+  //   console.log(result);
+  //   setSite(result);
+  //   remote.getCurrentWindow().reload();
+  // });
 
   useEffect(() => {
     findWebview(displays);
   });
 
-  return (
-    <>
-      <webview id='foo' src={site}></webview>
-    </>
-  );
+  return <webview id='foo' src={site}></webview>;
 };
 
 export default External;

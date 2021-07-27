@@ -59,7 +59,7 @@ export const AddUrl: FC<UrlProps> = ({ darkmode }) => {
 
               console.log('VALUE');
 
-              ipcRenderer.invoke('setWallpaper', value);
+              ipcRenderer.invoke('setWallpaper', { url: value, display: i });
               // ipcRenderer.send(
               //   'setWallpaper',
               //   'http://html5wallpaper.com/wp-depo/800/'

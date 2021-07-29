@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setIpcId = exports.getIpc = exports.emit = exports.ipcRegisterLibraryModel = exports.ipcStart = void 0;
+exports.setIpcId = exports.getIpc = exports.emit = exports.setRelationships = exports.ipcRegisterModels = exports.ipcStart = void 0;
 /**
  * @author Chad Koslovsky <chad@technomnancy.it>
  * @file Description
@@ -47,7 +47,7 @@ const ipcStart = (opts) => {
     });
 };
 exports.ipcStart = ipcStart;
-function ipcRegisterLibraryModel(opts) {
+function ipcRegisterModels(opts) {
     return new Promise((resolve, reject) => {
         const emitterId = nanoid_1.nanoid();
         node_ipc_1.default.of.Clout.emit('api', {
@@ -58,22 +58,24 @@ function ipcRegisterLibraryModel(opts) {
         ee.on(`api-${emitterId}`, callbackGenerator(emitterId, resolve));
     });
 }
-exports.ipcRegisterLibraryModel = ipcRegisterLibraryModel;
-function emit(channel, values) {
+exports.ipcRegisterModels = ipcRegisterModels;
+function setRelationships(relationships) {
     return new Promise((resolve, reject) => {
         const emitterId = nanoid_1.nanoid();
-        node_ipc_1.default.of.Clout.emit(channel, {
+        node_ipc_1.default.of.Clout.emit('api', {
             emitterId,
-            values: {
-                type: 'html5',
-                path: 'http://html5.com',
-                title: 'My Html5 videoz',
-                description: 'This is the video',
-            },
-            table: 'Library',
-            method: 'create',
-            type: 'database',
+            relationships,
+            type: 'relationships',
         });
+        ee.on(`api-${emitterId}`, callbackGenerator(emitterId, resolve));
+    });
+}
+exports.setRelationships = setRelationships;
+function emit(channel, values) {
+    console.log('WTF', values);
+    return new Promise((resolve, reject) => {
+        const emitterId = nanoid_1.nanoid();
+        node_ipc_1.default.of.Clout.emit(channel, Object.assign({ emitterId }, values));
         // const cb = function (doc: any) {
         //   ee.removeListener(`api-${emitterId}`, cb);
         //   resolve(doc);

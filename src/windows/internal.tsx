@@ -2,12 +2,26 @@
 
 import { FC, useEffect, useState } from 'react';
 import { remote, ipcRenderer } from 'electron';
+import ScriptTag from 'react-script-tag';
+import path from 'path';
+
+import fs from 'fs';
 
 import querystring from 'querystring';
 
+const htmlString = fs.readFileSync(
+  path.join(__dirname, '../../', 'public/test/', 'index.html'),
+  'utf-8'
+);
+remote.getCurrentWindow();
+const scriptString = fs.readFileSync(
+  path.join(__dirname, '../../', 'public/test/', 'script.js'),
+  'utf-8'
+);
+
 // let data = JSON.parse(query['?data']);
 
-interface ExternalProps {}
+interface InternalProps {}
 
 const { BrowserWindow, screen } = remote;
 
@@ -21,38 +35,17 @@ export function wait(ms: number) {
 }
 
 async function findWebview(displays: any) {
-  const webview: any = document.getElementById('foo');
+  const webview: any = document.getElementById('htmlLoaded');
 
   if (!webview) {
     await wait(100);
     findWebview(displays);
   }
 
-  webview.addEventListener('did-stop-loading', loadstop);
-
-  function loadstop() {
-    webview.insertCSS(
-      `html,body{ overflow:hidden; ${bg}}, ::-webkit - scrollbar{display: none;}`
-    );
-
-    setTimeout(() => {
-      // webview.sendInputEvent({ type: 'mouseDown', x: 1263, y: 730, button: 'left', clickCount: 100 });
-      // webview.sendInputEvent({ type: 'mouseUp', x: 1263, y: 730, button: 'left', clickCount: 1 });
-      var b = document.body;
-      b.addEventListener(
-        'click',
-        function (event) {
-          console.log(event.pageX, event.pageY);
-        },
-        false
-      );
-      //   webview.sendInputEvent({ type: 'mouseUp', x: 1263, y: 730, button: 'left', globalX: 1263, globalY: 730 });
-      webview.insertBefore;
-    }, 5000);
-  }
-
   // webview.openDevTools();
-
+  webview.addEventListener('did-stop-loading', () => {
+    console.log('FINISHEd');
+  });
   ipcRenderer.on('mousedown', (event, result) => {
     let { x, y } = result;
 
@@ -110,21 +103,33 @@ async function findWebview(displays: any) {
   webview.style.height = `${displays[displayIndex].size.height}px`;
 }
 
-export const External: FC<ExternalProps> = () => {
-  const [site, setSite] = useState(query['?url']);
+export const Internal: FC<InternalProps> = () => {
   const displays = screen.getAllDisplays();
-
-  ipcRenderer.on('setWallpaper', (event, result) => {
-    console.log(result);
-    setSite(result);
-    remote.getCurrentWindow().reload();
-  });
+  // eval(scriptString);
 
   useEffect(() => {
     findWebview(displays);
   });
+  const htmlPath = `file://${path.join(
+    __dirname,
+    '../../',
+    'public/test/',
+    'index.html'
+  )}`;
 
-  return <webview id='foo' src={site}></webview>;
+  console.log('HTMLPATH', htmlPath);
+
+  return (
+    <>
+      <body style={{ margin: 0, padding: 0 }}>
+        <webview
+          id='htmlLoaded'
+          src={htmlPath}
+          // dangerouslySetInnerHTML={{ __html: htmlString }}
+        ></webview>
+      </body>
+    </>
+  );
 };
 
-export default External;
+export default Internal;

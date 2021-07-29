@@ -19,10 +19,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
+const sendIpc_1 = __importDefault(require("../src/ipc/sendIpc"));
 const cloutTop_1 = __importDefault(require("../src/windows/cloutTop"));
 let connectionId;
 console.log('masd', __dirname);
-const { emit, getIpc, ipcStart, ipcRegisterLibraryModel, } = require(`${__dirname}/ipc`);
+const { emit, getIpc, ipcStart, ipcRegisterModels, } = require(`${__dirname}/ipc`);
 // ipcStart.default({
 //   models: path.join(
 //     __dirname,
@@ -35,25 +36,32 @@ const { emit, getIpc, ipcStart, ipcRegisterLibraryModel, } = require(`${__dirnam
 // });
 function init() {
     return __awaiter(this, void 0, void 0, function* () {
+        sendIpc_1.default;
         const registration = yield ipcStart({ id: connectionId });
-        yield ipcRegisterLibraryModel({
-            models: path_1.default.join(__dirname, '../', 'src/models/', 'Library.js'),
+        yield ipcRegisterModels({
+            models: [
+                path_1.default.join(__dirname, '../', 'src/models/', 'Library.js'),
+                path_1.default.join(__dirname, '../', 'src/models/', 'Scene.js'),
+                path_1.default.join(__dirname, '../', 'src/models/', 'LibraryScene.js'),
+            ],
             type: 'addModels',
         });
-        const info = yield emit('api', {
-            values: {
-                type: 'html5',
-                path: 'http://html5.com',
-                title: 'My Html5 videoz',
-                description: 'This is the video',
-            },
-            table: 'Library',
-            method: 'create',
-            type: 'database',
-        });
+        // await setRelationships([
+        //   {
+        //     type: 'hasOne',
+        //     model: 'Library',
+        //     relationshipModel: 'Scene',
+        //     opts: {
+        //       foreignKey: 'sceneId',
+        //     },
+        //   },
+        // ]);
+        // await ipcRegisterLibraryModel({
+        //   models: path.join(__dirname, '../', 'src/models/', 'Library.js'),
+        //   type: 'addModels',
+        // });
         // ipcMain.inv('setWallpaper');
         cloutTop_1.default();
-        console.log('INFP', info);
     });
 }
 function default_1(id) {

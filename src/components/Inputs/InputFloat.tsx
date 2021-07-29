@@ -3,6 +3,7 @@ import { FC, useState, ChangeEvent } from 'react';
 interface InputProps {
   label: string;
   id?: string;
+  type?: string;
   name?: string;
   value?: string;
   setValue?: any;
@@ -10,6 +11,7 @@ interface InputProps {
 
 export const InputFloat: FC<InputProps> = ({
   id,
+  type,
   name,
   label,
   value,
@@ -33,7 +35,7 @@ export const InputFloat: FC<InputProps> = ({
         <input
           onChange={handleChange}
           id={id || ''}
-          type='text'
+          type={type ? type : 'text'}
           name={name || ''}
           className='outline-none h-full w-full px-2 transition-all border-secondary dark:border-primary rounded-sm bg-transparent dark:text-primary text-black focus:ring-0 group'
           value={localValue}

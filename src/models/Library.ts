@@ -9,7 +9,7 @@
  * @return {Model Instance} This return the Library Instance. You may Create/Delete/Update/Find Librarys from postgress.
  */
 
-import { Optional } from 'sequelize';
+import { Optional } from '../../../../nodePaper/node_modules/sequelize';
 
 import {
   Table,
@@ -18,9 +18,17 @@ import {
   AllowNull,
   DataType,
   BelongsTo,
-} from 'sequelize-typescript';
+  BelongsToMany,
+  HasMany,
+  HasOne,
+} from '../../../../nodePaper/node_modules/sequelize-typescript';
+
+import Scene from './Scene';
+import LibraryScene from './LibraryScene';
 
 // Library functions
+
+let firstRun = true;
 
 export interface LibraryAttributes {
   id: number;
@@ -38,7 +46,14 @@ export default class Library extends Model<
   LibraryAttributes,
   LibraryCreationAttributes
 > {
+  // constructor(message: string) {
+  //   super();
+  //   console.log('I AM RUNNIONG');
+  // }
   //Columns
+  init = () => {
+    console.log('RANZO');
+  };
   @AllowNull(false)
   @Column({ type: DataType.TEXT })
   type!: 'html5' | 'video' | 'picture';
@@ -56,5 +71,16 @@ export default class Library extends Model<
   @Column({ type: DataType.JSONB })
   extra!: Object;
 
+  // @HasOne(() => {
+  //   if (firstRun) {
+  //     console.log('RUN ON', Library, firstRun);
+  //     firstRun = false;
+  //     return (global as any).models.Scene;
+  //   } else return (global as any).models.Scene;
+  // }, 'sceneId')
+  // scene!: string;
+
   //Relationships
+  @BelongsToMany(() => Scene, () => LibraryScene, 'sceneId', 'libraryId')
+  items!: Array<Scene & { LibraryScene: LibraryScene }>;
 }

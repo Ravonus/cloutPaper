@@ -79,9 +79,10 @@ export default () => {
         wallpaper.attachWindow(window);
       }, 100);
     });
+
     let url = 'http://html5wallpaper.com/wp-depo/264/';
     window?.loadURL(
-      `file://${__dirname}/index.html?url=${url}&displayIndex=${i}`
+      `file://${__dirname}/index.html?url=${url}&displayIndex=${i}&bg=background-color: rgba(255, 255, 255, 0) !important; background: rgba(255, 255, 255, 0) !important;`
     );
 
     window.displayId = display.id;
@@ -89,37 +90,37 @@ export default () => {
     displayWindows.push(window);
   });
 
-  let mainWindow: null | BrowserWindow = new BrowserWindow({
-    webPreferences: {
-      nodeIntegrationInSubFrames: true,
-      webviewTag: true,
+  // let mainWindow: null | BrowserWindow = new BrowserWindow({
+  //   webPreferences: {
+  //     nodeIntegrationInSubFrames: true,
+  //     webviewTag: true,
 
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      contextIsolation: false,
-      webSecurity: false,
-    },
-    fullscreen: true,
-    type: 'desktop',
-    transparent: true,
-    frame: false,
-  });
+  //     nodeIntegration: true,
+  //     enableRemoteModule: true,
+  //     contextIsolation: false,
+  //     webSecurity: false,
+  //   },
+  //   fullscreen: true,
+  //   type: 'desktop',
+  //   transparent: true,
+  //   frame: false,
+  // });
 
-  //mainWindow.webContents.openDevTools();
+  // //mainWindow.webContents.openDevTools();
 
-  const dir = path.join(__dirname, '../renderer/', 'wallpaper/');
-  let url = 'http://html5wallpaper.com/wp-depo/264/';
+  // const dir = path.join(__dirname, '../renderer/', 'wallpaper/');
+  // let url = 'http://html5wallpaper.com/wp-depo/264/';
 
-  mainWindow.hide();
-  mainWindow.webContents.on('did-navigate', () => {
-    setTimeout(() => {
-      wallpaper.attachWindow(mainWindow);
-    }, 100);
-  });
+  // mainWindow.hide();
+  // mainWindow.webContents.on('did-navigate', () => {
+  //   setTimeout(() => {
+  //     wallpaper.attachWindow(mainWindow);
+  //   }, 100);
+  // });
 
-  ipcMain.handle('setWallpaper', (event, { url, display }) => {
+  ipcMain.handle('setWallpaper', (event, { url, display, bg }) => {
     displayWindows[display]?.loadURL(
-      `file://${__dirname}/index.html?url=${url}&displayIndex=${display}`
+      `file://${__dirname}/index.html?url=${url}&displayIndex=${display}&bg=${bg}`
     );
 
     return true;
@@ -167,7 +168,6 @@ export default () => {
         mousePointerDisplay,
         adjustedPoint
       );
-      window.getPosition;
 
       window?.webContents.send('mousedown', point);
     }

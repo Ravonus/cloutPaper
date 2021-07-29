@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const jsx_runtime_1 = require("react/jsx-runtime");
+const react_1 = require("react");
+const MultiSelect = () => {
+    const [items, setItems] = react_1.useState(['john', 'milos', 'steph', 'kathreine']);
+    const [selectedItems, setSelected] = react_1.useState([]);
+    return (jsx_runtime_1.jsx("div", Object.assign({ className: 'autcomplete-wrapper' }, { children: jsx_runtime_1.jsx("div", Object.assign({ className: 'autcomplete' }, { children: jsx_runtime_1.jsx("div", Object.assign({ className: 'w-full flex flex-col items-center mx-auto' }, { children: jsx_runtime_1.jsx("div", Object.assign({ className: 'w-full' }, { children: jsx_runtime_1.jsx("div", Object.assign({ className: 'flex flex-col items-center relative' }, { children: jsx_runtime_1.jsx("div", Object.assign({ className: 'w-full ' }, { children: jsx_runtime_1.jsxs("div", Object.assign({ className: 'my-2 p-1 flex border border-gray-200 bg-white rounded ' }, { children: [jsx_runtime_1.jsxs("div", Object.assign({ className: 'flex flex-auto flex-wrap' }, { children: [selectedItems.map((tag, index) => {
+                                                return (jsx_runtime_1.jsxs("div", Object.assign({ className: 'flex justify-center items-center m-1 font-medium py-1 px-2 bg-white rounded-full text-teal-700 bg-teal-100 border border-teal-300 ' }, { children: [jsx_runtime_1.jsx("div", Object.assign({ className: 'text-xs font-normal leading-none max-w-full flex-initial' }, { children: tag }), void 0), jsx_runtime_1.jsx("div", Object.assign({ className: 'flex flex-auto flex-row-reverse' }, { children: jsx_runtime_1.jsx("div", {}, void 0) }), void 0)] }), index));
+                                            }), jsx_runtime_1.jsx("div", Object.assign({ className: 'flex-1' }, { children: jsx_runtime_1.jsx("input", { placeholder: '', className: 'bg-transparent p-1 px-2 appearance-none outline-none h-full w-full text-gray-800' }, void 0) }), void 0)] }), void 0), jsx_runtime_1.jsx("div", Object.assign({ className: 'text-gray-300 w-8 py-1 pl-2 pr-1 border-l flex items-center border-gray-200' }, { children: jsx_runtime_1.jsx("button", { className: 'cursor-pointer w-6 h-6 text-gray-600 outline-none focus:outline-none' }, void 0) }), void 0)] }), void 0) }), void 0) }), void 0) }), void 0) }), void 0) }), void 0) }), void 0));
+};
+exports.default = MultiSelect;

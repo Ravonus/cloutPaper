@@ -7,18 +7,18 @@
 
 import { ipcMain } from 'electron';
 import path from 'path';
+import sendIpc from '../src/ipc/sendIpc';
 import wp from '../src/windows/cloutTop';
-import { setIpcId } from './ipc';
+import { setIpcId, setRelationships } from './ipc';
 
 let connectionId: string;
 
 console.log('masd', __dirname);
-
 const {
   emit,
   getIpc,
   ipcStart,
-  ipcRegisterLibraryModel,
+  ipcRegisterModels,
 } = require(`${__dirname}/ipc`);
 
 // ipcStart.default({
@@ -33,28 +33,36 @@ const {
 // });
 
 async function init() {
+  sendIpc;
   const registration = await ipcStart({ id: connectionId });
 
-  await ipcRegisterLibraryModel({
-    models: path.join(__dirname, '../', 'src/models/', 'Library.js'),
+  await ipcRegisterModels({
+    models: [
+      path.join(__dirname, '../', 'src/models/', 'Library.js'),
+      path.join(__dirname, '../', 'src/models/', 'Scene.js'),
+      path.join(__dirname, '../', 'src/models/', 'LibraryScene.js'),
+    ],
     type: 'addModels',
   });
 
-  const info = await emit('api', {
-    values: {
-      type: 'html5',
-      path: 'http://html5.com',
-      title: 'My Html5 videoz',
-      description: 'This is the video',
-    },
-    table: 'Library',
-    method: 'create',
-    type: 'database',
-  });
+  // await setRelationships([
+  //   {
+  //     type: 'hasOne',
+  //     model: 'Library',
+  //     relationshipModel: 'Scene',
+  //     opts: {
+  //       foreignKey: 'sceneId',
+  //     },
+  //   },
+  // ]);
+
+  // await ipcRegisterLibraryModel({
+  //   models: path.join(__dirname, '../', 'src/models/', 'Library.js'),
+  //   type: 'addModels',
+  // });
 
   // ipcMain.inv('setWallpaper');
   wp();
-  console.log('INFP', info);
 }
 
 export default async function (id: string) {

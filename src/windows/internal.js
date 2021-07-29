@@ -12,12 +12,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.External = exports.wait = void 0;
+exports.Internal = exports.wait = void 0;
 const jsx_runtime_1 = require("react/jsx-runtime");
 //TODO: Add Settings to active side nav check.
 const react_1 = require("react");
 const electron_1 = require("electron");
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 const querystring_1 = __importDefault(require("querystring"));
+const htmlString = fs_1.default.readFileSync(path_1.default.join(__dirname, '../../', 'public/test/', 'index.html'), 'utf-8');
+electron_1.remote.getCurrentWindow();
+const scriptString = fs_1.default.readFileSync(path_1.default.join(__dirname, '../../', 'public/test/', 'script.js'), 'utf-8');
 const { BrowserWindow, screen } = electron_1.remote;
 const query = querystring_1.default.parse(global.location.search);
 const displayIndex = query.displayIndex;
@@ -28,26 +33,15 @@ function wait(ms) {
 exports.wait = wait;
 function findWebview(displays) {
     return __awaiter(this, void 0, void 0, function* () {
-        const webview = document.getElementById('foo');
+        const webview = document.getElementById('htmlLoaded');
         if (!webview) {
             yield wait(100);
             findWebview(displays);
         }
-        webview.addEventListener('did-stop-loading', loadstop);
-        function loadstop() {
-            webview.insertCSS(`html,body{ overflow:hidden; ${bg}}, ::-webkit - scrollbar{display: none;}`);
-            setTimeout(() => {
-                // webview.sendInputEvent({ type: 'mouseDown', x: 1263, y: 730, button: 'left', clickCount: 100 });
-                // webview.sendInputEvent({ type: 'mouseUp', x: 1263, y: 730, button: 'left', clickCount: 1 });
-                var b = document.body;
-                b.addEventListener('click', function (event) {
-                    console.log(event.pageX, event.pageY);
-                }, false);
-                //   webview.sendInputEvent({ type: 'mouseUp', x: 1263, y: 730, button: 'left', globalX: 1263, globalY: 730 });
-                webview.insertBefore;
-            }, 5000);
-        }
         // webview.openDevTools();
+        webview.addEventListener('did-stop-loading', () => {
+            console.log('FINISHEd');
+        });
         electron_1.ipcRenderer.on('mousedown', (event, result) => {
             let { x, y } = result;
             webview.sendInputEvent({
@@ -96,18 +90,15 @@ function findWebview(displays) {
         webview.style.height = `${displays[displayIndex].size.height}px`;
     });
 }
-const External = () => {
-    const [site, setSite] = react_1.useState(query['?url']);
+const Internal = () => {
     const displays = screen.getAllDisplays();
-    electron_1.ipcRenderer.on('setWallpaper', (event, result) => {
-        console.log(result);
-        setSite(result);
-        electron_1.remote.getCurrentWindow().reload();
-    });
+    // eval(scriptString);
     react_1.useEffect(() => {
         findWebview(displays);
     });
-    return jsx_runtime_1.jsx("webview", { id: 'foo', src: site }, void 0);
+    const htmlPath = `file://${path_1.default.join(__dirname, '../../', 'public/test/', 'index.html')}`;
+    console.log('HTMLPATH', htmlPath);
+    return (jsx_runtime_1.jsx(jsx_runtime_1.Fragment, { children: jsx_runtime_1.jsx("body", Object.assign({ style: { margin: 0, padding: 0 } }, { children: jsx_runtime_1.jsx("webview", { id: 'htmlLoaded', src: htmlPath }, void 0) }), void 0) }, void 0));
 };
-exports.External = External;
-exports.default = exports.External;
+exports.Internal = Internal;
+exports.default = exports.Internal;

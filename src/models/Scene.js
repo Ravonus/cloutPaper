@@ -4,10 +4,10 @@
  * @email Chad@technomancy.it
  * @create date 2021-05-25 00:12:45
  * @modify date 2021-05-29 05:05:22
- * @desc [ Library postgres model. This extends the Library Table into a functional class throughout the application. Just include this file within a script and it will let you know all functionality you have via the database with this table.
- *        You will see the @Table class has all your Column info inside of it. You can set Hooks and Prototypes on the Acutal Library Class or Library Instance you pull. The model will always be attached to sequalize.models.
+ * @desc [ Scene postgres model. This extends the Scene Table into a functional class throughout the application. Just include this file within a script and it will let you know all functionality you have via the database with this table.
+ *        You will see the @Table class has all your Column info inside of it. You can set Hooks and Prototypes on the Acutal Scene Class or Scene Instance you pull. The model will always be attached to sequalize.models.
  *        If imported directly from this file Typing will work and let you know the database columns that are accepted. ]
- * @return {Model Instance} This return the Library Instance. You may Create/Delete/Update/Find Librarys from postgress.
+ * @return {Model Instance} This return the Scene Instance. You may Create/Delete/Update/Find Scenes from postgress.
  */
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -23,53 +23,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("../../../../nodePaper/node_modules/sequelize-typescript");
-const Scene_1 = __importDefault(require("./Scene"));
+const Library_1 = __importDefault(require("./Library"));
 const LibraryScene_1 = __importDefault(require("./LibraryScene"));
-// Library functions
-let firstRun = true;
-let Library = class Library extends sequelize_typescript_1.Model {
-    constructor() {
-        super(...arguments);
-        // constructor(message: string) {
-        //   super();
-        //   console.log('I AM RUNNIONG');
-        // }
-        //Columns
-        this.init = () => {
-            console.log('RANZO');
-        };
-    }
+let Scene = class Scene extends sequelize_typescript_1.Model {
 };
 __decorate([
-    sequelize_typescript_1.AllowNull(false),
-    sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.TEXT }),
-    __metadata("design:type", String)
-], Library.prototype, "type", void 0);
-__decorate([
-    sequelize_typescript_1.AllowNull(false),
-    sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.TEXT }),
-    __metadata("design:type", String)
-], Library.prototype, "path", void 0);
-__decorate([
     sequelize_typescript_1.AllowNull(true),
     sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.TEXT }),
     __metadata("design:type", String)
-], Library.prototype, "description", void 0);
+], Scene.prototype, "description", void 0);
 __decorate([
-    sequelize_typescript_1.AllowNull(true),
+    sequelize_typescript_1.AllowNull(false),
+    sequelize_typescript_1.Unique(true),
     sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.TEXT }),
     __metadata("design:type", String)
-], Library.prototype, "title", void 0);
+], Scene.prototype, "title", void 0);
 __decorate([
     sequelize_typescript_1.AllowNull(true),
     sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.JSONB }),
     __metadata("design:type", Object)
-], Library.prototype, "extra", void 0);
+], Scene.prototype, "extra", void 0);
 __decorate([
-    sequelize_typescript_1.BelongsToMany(() => Scene_1.default, () => LibraryScene_1.default, 'sceneId', 'libraryId'),
+    sequelize_typescript_1.AllowNull(true),
+    sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.JSONB }),
+    __metadata("design:type", Object)
+], Scene.prototype, "rules", void 0);
+__decorate([
+    sequelize_typescript_1.BelongsToMany(() => Library_1.default, () => LibraryScene_1.default, 'libraryId', 'sceneId'),
     __metadata("design:type", Array)
-], Library.prototype, "items", void 0);
-Library = __decorate([
+], Scene.prototype, "scenes", void 0);
+Scene = __decorate([
     sequelize_typescript_1.Table({ timestamps: true })
-], Library);
-exports.default = Library;
+], Scene);
+exports.default = Scene;

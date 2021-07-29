@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
+  </link>
+</head>
+
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display:none">
+    <defs>
+      <filter id="squiggly">
+        <feTurbulence baseFrequency="0.22" numOctaves="3" result="noise" seed="0" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" />
+      </filter>
+    </defs>
+  </svg>
+  <script src="script.js"></script>
+</body>
+
+</html>

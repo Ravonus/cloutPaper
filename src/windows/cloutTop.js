@@ -10,7 +10,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @copyright TechnomancyIT
  */
 const electron_1 = require("electron");
-const path_1 = __importDefault(require("path"));
 const electron_wallpaper_napi_1 = __importDefault(require("electron-wallpaper-napi"));
 const iohook_1 = __importDefault(require("iohook"));
 const keycode_1 = __importDefault(require("keycode"));
@@ -65,36 +64,36 @@ exports.default = () => {
             }, 100);
         });
         let url = 'http://html5wallpaper.com/wp-depo/264/';
-        window === null || window === void 0 ? void 0 : window.loadURL(`file://${__dirname}/index.html?url=${url}&displayIndex=${i}`);
+        window === null || window === void 0 ? void 0 : window.loadURL(`file://${__dirname}/index.html?url=${url}&displayIndex=${i}&bg=background-color: rgba(255, 255, 255, 0) !important; background: rgba(255, 255, 255, 0) !important;`);
         window.displayId = display.id;
         displayWindows.push(window);
     });
-    let mainWindow = new electron_1.BrowserWindow({
-        webPreferences: {
-            nodeIntegrationInSubFrames: true,
-            webviewTag: true,
-            nodeIntegration: true,
-            enableRemoteModule: true,
-            contextIsolation: false,
-            webSecurity: false,
-        },
-        fullscreen: true,
-        type: 'desktop',
-        transparent: true,
-        frame: false,
-    });
-    //mainWindow.webContents.openDevTools();
-    const dir = path_1.default.join(__dirname, '../renderer/', 'wallpaper/');
-    let url = 'http://html5wallpaper.com/wp-depo/264/';
-    mainWindow.hide();
-    mainWindow.webContents.on('did-navigate', () => {
-        setTimeout(() => {
-            electron_wallpaper_napi_1.default.attachWindow(mainWindow);
-        }, 100);
-    });
-    electron_1.ipcMain.handle('setWallpaper', (event, { url, display }) => {
+    // let mainWindow: null | BrowserWindow = new BrowserWindow({
+    //   webPreferences: {
+    //     nodeIntegrationInSubFrames: true,
+    //     webviewTag: true,
+    //     nodeIntegration: true,
+    //     enableRemoteModule: true,
+    //     contextIsolation: false,
+    //     webSecurity: false,
+    //   },
+    //   fullscreen: true,
+    //   type: 'desktop',
+    //   transparent: true,
+    //   frame: false,
+    // });
+    // //mainWindow.webContents.openDevTools();
+    // const dir = path.join(__dirname, '../renderer/', 'wallpaper/');
+    // let url = 'http://html5wallpaper.com/wp-depo/264/';
+    // mainWindow.hide();
+    // mainWindow.webContents.on('did-navigate', () => {
+    //   setTimeout(() => {
+    //     wallpaper.attachWindow(mainWindow);
+    //   }, 100);
+    // });
+    electron_1.ipcMain.handle('setWallpaper', (event, { url, display, bg }) => {
         var _a;
-        (_a = displayWindows[display]) === null || _a === void 0 ? void 0 : _a.loadURL(`file://${__dirname}/index.html?url=${url}&displayIndex=${display}`);
+        (_a = displayWindows[display]) === null || _a === void 0 ? void 0 : _a.loadURL(`file://${__dirname}/index.html?url=${url}&displayIndex=${display}&bg=${bg}`);
         return true;
     });
     iohook_1.default.on('mousemove', (event) => {
@@ -118,7 +117,6 @@ exports.default = () => {
         if (event.button === 1) {
             const { mousePointerDisplay, adjustedPoint } = grabDisplay();
             const { window, point } = grabWindowByDisplayId(mousePointerDisplay, adjustedPoint);
-            window.getPosition;
             window === null || window === void 0 ? void 0 : window.webContents.send('mousedown', point);
         }
     });

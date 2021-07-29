@@ -51,7 +51,7 @@ export const ipcStart = (opts: any) => {
   });
 };
 
-export function ipcRegisterLibraryModel(opts: any) {
+export function ipcRegisterModels(opts: any) {
   return new Promise((resolve, reject) => {
     const emitterId = nanoid();
     ipc.of.Clout.emit('api', {
@@ -64,20 +64,26 @@ export function ipcRegisterLibraryModel(opts: any) {
   });
 }
 
+export function setRelationships(relationships: any) {
+  return new Promise((resolve, reject) => {
+    const emitterId = nanoid();
+    ipc.of.Clout.emit('api', {
+      emitterId,
+      relationships,
+      type: 'relationships',
+    });
+
+    ee.on(`api-${emitterId}`, callbackGenerator(emitterId, resolve));
+  });
+}
+
 export function emit(channel: string, values: any) {
+  console.log('WTF', values);
   return new Promise((resolve, reject) => {
     const emitterId = nanoid();
     ipc.of.Clout.emit(channel, {
       emitterId,
-      values: {
-        type: 'html5',
-        path: 'http://html5.com',
-        title: 'My Html5 videoz',
-        description: 'This is the video',
-      },
-      table: 'Library',
-      method: 'create',
-      type: 'database',
+      ...values,
     });
 
     // const cb = function (doc: any) {

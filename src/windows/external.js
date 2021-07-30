@@ -18,6 +18,7 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const electron_1 = require("electron");
 const querystring_1 = __importDefault(require("querystring"));
+const renderInputHandle_1 = require("../libs/renderInputHandle");
 const { BrowserWindow, screen } = electron_1.remote;
 const query = querystring_1.default.parse(global.location.search);
 const displayIndex = query.displayIndex;
@@ -48,49 +49,50 @@ function findWebview(displays) {
             }, 5000);
         }
         // webview.openDevTools();
-        electron_1.ipcRenderer.on('mousedown', (event, result) => {
-            let { x, y } = result;
-            webview.sendInputEvent({
-                type: 'mousedown',
-                x,
-                y,
-                button: 'left',
-                clickCount: 1,
-            });
-        });
-        electron_1.ipcRenderer.on('mouseup', (event, result) => {
-            let { x, y } = result;
-            webview.sendInputEvent({
-                type: 'mouseup',
-                x,
-                y,
-                button: 'left',
-                clickCount: 1,
-            });
-        });
-        electron_1.ipcRenderer.on('keydown', (event, keyCode) => {
-            webview.sendInputEvent({
-                type: keyCode.length > 1 ? 'keyUp' : 'char',
-                keyCode,
-            });
-        });
-        electron_1.ipcRenderer.on('keyup', (event, keyInfo) => {
-            const keyCode = keyInfo.rawcode.toString();
-            // var evt = new KeyboardEvent('keyup', { keyCode });
-            // document.dispatchEvent(evt);
-            webview.sendInputEvent({
-                type: 'char',
-                keyCode,
-            });
-        });
-        electron_1.ipcRenderer.on('mousemove', (event, result) => {
-            const { x, y } = result;
-            webview.sendInputEvent({
-                type: 'mousemove',
-                x,
-                y,
-            });
-        });
+        renderInputHandle_1.renderInputHandle(webview);
+        // ipcRenderer.on('mousedown', (event, result) => {
+        //   let { x, y } = result;
+        //   webview.sendInputEvent({
+        //     type: 'mousedown',
+        //     x,
+        //     y,
+        //     button: 'left',
+        //     clickCount: 1,
+        //   });
+        // });
+        // ipcRenderer.on('mouseup', (event, result) => {
+        //   let { x, y } = result;
+        //   webview.sendInputEvent({
+        //     type: 'mouseup',
+        //     x,
+        //     y,
+        //     button: 'left',
+        //     clickCount: 1,
+        //   });
+        // });
+        // ipcRenderer.on('keydown', (event, keyCode) => {
+        //   webview.sendInputEvent({
+        //     type: keyCode.length > 1 ? 'keyUp' : 'char',
+        //     keyCode,
+        //   });
+        // });
+        // ipcRenderer.on('keyup', (event, keyInfo) => {
+        //   const keyCode = keyInfo.rawcode.toString();
+        //   // var evt = new KeyboardEvent('keyup', { keyCode });
+        //   // document.dispatchEvent(evt);
+        //   webview.sendInputEvent({
+        //     type: 'char',
+        //     keyCode,
+        //   });
+        // });
+        // ipcRenderer.on('mousemove', (event, result) => {
+        //   const { x, y } = result;
+        //   webview.sendInputEvent({
+        //     type: 'mousemove',
+        //     x,
+        //     y,
+        //   });
+        // });
         // webview.style.width = '1'
         webview.style.width = `${displays[displayIndex].size.width}px`;
         webview.style.height = `${displays[displayIndex].size.height}px`;

@@ -4,6 +4,7 @@ import { FC, useEffect, useState } from 'react';
 import { remote, ipcRenderer } from 'electron';
 
 import querystring from 'querystring';
+import { renderInputHandle } from '../libs/renderInputHandle';
 
 // let data = JSON.parse(query['?data']);
 
@@ -53,57 +54,59 @@ async function findWebview(displays: any) {
 
   // webview.openDevTools();
 
-  ipcRenderer.on('mousedown', (event, result) => {
-    let { x, y } = result;
+  renderInputHandle(webview);
 
-    webview.sendInputEvent({
-      type: 'mousedown',
-      x,
-      y,
-      button: 'left',
-      clickCount: 1,
-    });
-  });
+  // ipcRenderer.on('mousedown', (event, result) => {
+  //   let { x, y } = result;
 
-  ipcRenderer.on('mouseup', (event, result) => {
-    let { x, y } = result;
+  //   webview.sendInputEvent({
+  //     type: 'mousedown',
+  //     x,
+  //     y,
+  //     button: 'left',
+  //     clickCount: 1,
+  //   });
+  // });
 
-    webview.sendInputEvent({
-      type: 'mouseup',
-      x,
-      y,
-      button: 'left',
-      clickCount: 1,
-    });
-  });
+  // ipcRenderer.on('mouseup', (event, result) => {
+  //   let { x, y } = result;
 
-  ipcRenderer.on('keydown', (event, keyCode) => {
-    webview.sendInputEvent({
-      type: keyCode.length > 1 ? 'keyUp' : 'char',
-      keyCode,
-    });
-  });
+  //   webview.sendInputEvent({
+  //     type: 'mouseup',
+  //     x,
+  //     y,
+  //     button: 'left',
+  //     clickCount: 1,
+  //   });
+  // });
 
-  ipcRenderer.on('keyup', (event, keyInfo) => {
-    const keyCode = keyInfo.rawcode.toString();
+  // ipcRenderer.on('keydown', (event, keyCode) => {
+  //   webview.sendInputEvent({
+  //     type: keyCode.length > 1 ? 'keyUp' : 'char',
+  //     keyCode,
+  //   });
+  // });
 
-    // var evt = new KeyboardEvent('keyup', { keyCode });
-    // document.dispatchEvent(evt);
-    webview.sendInputEvent({
-      type: 'char',
-      keyCode,
-    });
-  });
+  // ipcRenderer.on('keyup', (event, keyInfo) => {
+  //   const keyCode = keyInfo.rawcode.toString();
 
-  ipcRenderer.on('mousemove', (event, result) => {
-    const { x, y } = result;
+  //   // var evt = new KeyboardEvent('keyup', { keyCode });
+  //   // document.dispatchEvent(evt);
+  //   webview.sendInputEvent({
+  //     type: 'char',
+  //     keyCode,
+  //   });
+  // });
 
-    webview.sendInputEvent({
-      type: 'mousemove',
-      x,
-      y,
-    });
-  });
+  // ipcRenderer.on('mousemove', (event, result) => {
+  //   const { x, y } = result;
+
+  //   webview.sendInputEvent({
+  //     type: 'mousemove',
+  //     x,
+  //     y,
+  //   });
+  // });
 
   // webview.style.width = '1'
   webview.style.width = `${displays[displayIndex].size.width}px`;

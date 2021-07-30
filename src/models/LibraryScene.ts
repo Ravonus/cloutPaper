@@ -43,17 +43,25 @@ interface LibrarySceneAttributes {
   libraryId: number;
   enabled: boolean;
   rules: object[];
-  monitors: number[];
+  monitors: string | number[];
   size: number;
   location: number;
   opacity: number;
   mute: boolean;
   loop: boolean;
 }
-interface LibrarySceneCreationAttributes
+export interface LibrarySceneCreationAttributes
   extends Optional<
     LibrarySceneAttributes,
-    'id' | 'rules' | 'monitors' | 'size' | 'location' | 'opacity' | 'mute'
+    | 'id'
+    | 'rules'
+    | 'monitors'
+    | 'size'
+    | 'location'
+    | 'opacity'
+    | 'mute'
+    | 'loop'
+    | 'enabled'
   > {}
 @Table({ timestamps: false })
 export default class LibraryScene extends Model<
@@ -66,7 +74,7 @@ export default class LibraryScene extends Model<
   @Column({ type: DataType.ARRAY(DataType.JSONB) })
   rules?: object[];
   @Column({ type: DataType.ARRAY(DataType.NUMBER) })
-  monitors?: number[];
+  monitors?: number[] | string;
   @Column({ type: DataType.FLOAT })
   size?: number;
   @Column({ type: DataType.FLOAT })

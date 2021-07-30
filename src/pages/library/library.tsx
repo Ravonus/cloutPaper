@@ -12,14 +12,12 @@ export const Library: FC<MainProps> = ({ darkmode }) => {
 
   useEffect(() => {
     (async () => {
-      (async () => {
-        const result = await ipcRenderer.invoke('database', {
-          type: 'read',
-          model: 'Library',
-        });
+      const result = await ipcRenderer.invoke('database', {
+        type: 'read',
+        model: 'Library',
+      });
 
-        setItems(result);
-      })();
+      setItems(result);
     })();
   }, []);
 

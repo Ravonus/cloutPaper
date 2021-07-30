@@ -28,6 +28,11 @@ const LibraryScene_1 = __importDefault(require("./LibraryScene"));
 let Scene = class Scene extends sequelize_typescript_1.Model {
 };
 __decorate([
+    sequelize_typescript_1.Default(false),
+    sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.BOOLEAN }),
+    __metadata("design:type", String)
+], Scene.prototype, "enabled", void 0);
+__decorate([
     sequelize_typescript_1.AllowNull(true),
     sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.TEXT }),
     __metadata("design:type", String)
@@ -45,8 +50,8 @@ __decorate([
 ], Scene.prototype, "extra", void 0);
 __decorate([
     sequelize_typescript_1.AllowNull(true),
-    sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.JSONB }),
-    __metadata("design:type", Object)
+    sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.ARRAY(sequelize_typescript_1.DataType.JSONB) }),
+    __metadata("design:type", Array)
 ], Scene.prototype, "rules", void 0);
 __decorate([
     sequelize_typescript_1.BelongsToMany(() => Library_1.default, () => LibraryScene_1.default, 'libraryId', 'sceneId'),

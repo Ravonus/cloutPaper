@@ -9,15 +9,7 @@ import fs from 'fs';
 
 import querystring from 'querystring';
 
-const htmlString = fs.readFileSync(
-  path.join(__dirname, '../../', 'public/test/', 'index.html'),
-  'utf-8'
-);
 remote.getCurrentWindow();
-const scriptString = fs.readFileSync(
-  path.join(__dirname, '../../', 'public/test/', 'script.js'),
-  'utf-8'
-);
 
 // let data = JSON.parse(query['?data']);
 
@@ -37,67 +29,69 @@ export function wait(ms: number) {
 async function findWebview(displays: any) {
   const webview: any = document.getElementById('htmlLoaded');
 
+  console.log('RUNK');
+
   if (!webview) {
     await wait(100);
-    findWebview(displays);
+    await findWebview(displays);
   }
 
-  // webview.openDevTools();
+  //webview.openDevTools();
   webview.addEventListener('did-stop-loading', () => {
     console.log('FINISHEd');
-  });
-  ipcRenderer.on('mousedown', (event, result) => {
-    let { x, y } = result;
+    webview.openDevTools();
+    ipcRenderer.on('mousedown', (event, result) => {
+      let { x, y } = result;
 
-    webview.sendInputEvent({
-      type: 'mousedown',
-      x,
-      y,
-      button: 'left',
-      clickCount: 1,
+      webview.sendInputEvent({
+        type: 'mousedown',
+        x,
+        y,
+        button: 'left',
+        clickCount: 1,
+      });
+    });
+
+    ipcRenderer.on('mouseup', (event, result) => {
+      let { x, y } = result;
+
+      webview.sendInputEvent({
+        type: 'mouseup',
+        x,
+        y,
+        button: 'left',
+        clickCount: 1,
+      });
+    });
+
+    ipcRenderer.on('keydown', (event, keyCode) => {
+      webview.sendInputEvent({
+        type: keyCode.length > 1 ? 'keyUp' : 'char',
+        keyCode,
+      });
+    });
+
+    ipcRenderer.on('keyup', (event, keyInfo) => {
+      const keyCode = keyInfo.rawcode.toString();
+
+      // var evt = new KeyboardEvent('keyup', { keyCode });
+      // document.dispatchEvent(evt);
+      webview.sendInputEvent({
+        type: 'char',
+        keyCode,
+      });
+    });
+
+    ipcRenderer.on('mousemove', (event, result) => {
+      const { x, y } = result;
+
+      webview.sendInputEvent({
+        type: 'mousemove',
+        x,
+        y,
+      });
     });
   });
-
-  ipcRenderer.on('mouseup', (event, result) => {
-    let { x, y } = result;
-
-    webview.sendInputEvent({
-      type: 'mouseup',
-      x,
-      y,
-      button: 'left',
-      clickCount: 1,
-    });
-  });
-
-  ipcRenderer.on('keydown', (event, keyCode) => {
-    webview.sendInputEvent({
-      type: keyCode.length > 1 ? 'keyUp' : 'char',
-      keyCode,
-    });
-  });
-
-  ipcRenderer.on('keyup', (event, keyInfo) => {
-    const keyCode = keyInfo.rawcode.toString();
-
-    // var evt = new KeyboardEvent('keyup', { keyCode });
-    // document.dispatchEvent(evt);
-    webview.sendInputEvent({
-      type: 'char',
-      keyCode,
-    });
-  });
-
-  ipcRenderer.on('mousemove', (event, result) => {
-    const { x, y } = result;
-
-    webview.sendInputEvent({
-      type: 'mousemove',
-      x,
-      y,
-    });
-  });
-
   // webview.style.width = '1'
   webview.style.width = `${displays[displayIndex].size.width}px`;
   webview.style.height = `${displays[displayIndex].size.height}px`;
@@ -113,7 +107,7 @@ export const Internal: FC<InternalProps> = () => {
   const htmlPath = `file://${path.join(
     __dirname,
     '../../',
-    'public/test/',
+    'public/sakura/',
     'index.html'
   )}`;
 
@@ -121,13 +115,7 @@ export const Internal: FC<InternalProps> = () => {
 
   return (
     <>
-      <body style={{ margin: 0, padding: 0 }}>
-        <webview
-          id='htmlLoaded'
-          src={htmlPath}
-          // dangerouslySetInnerHTML={{ __html: htmlString }}
-        ></webview>
-      </body>
+      <webview id='htmlLoaded' src={htmlPath}></webview>
     </>
   );
 };

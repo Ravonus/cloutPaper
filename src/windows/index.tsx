@@ -9,8 +9,8 @@ console.log('DUDE');
 
 render(
   <>
-    <Internal></Internal>
-    {/* <External></External> */}
+    {/* <Internal></Internal> */}
+    <External></External>
   </>,
   document.getElementById('windows')
 );

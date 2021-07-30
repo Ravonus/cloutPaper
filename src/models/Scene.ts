@@ -15,6 +15,7 @@ import sequelize, {
   Table,
   Column,
   Model,
+  Default,
   AllowNull,
   DataType,
   BelongsTo,
@@ -30,14 +31,18 @@ import LibraryScene from './LibraryScene';
 
 export interface SceneAttributes {
   id: number;
-  extra?: Object;
-  rules?: Object;
+  extra: Object;
+  enabled: boolean;
+  rules: { [key: string]: {} }[];
   title: string;
   description: string;
-  items: number[];
 }
 
-interface SceneCreationAttributes extends Optional<SceneAttributes, 'id'> {}
+export interface SceneCreationAttributes
+  extends Optional<
+    SceneAttributes,
+    'id' | 'extra' | 'rules' | 'description' | 'enabled'
+  > {}
 
 @Table({ timestamps: true })
 export default class Scene extends Model<
@@ -45,6 +50,9 @@ export default class Scene extends Model<
   SceneCreationAttributes
 > {
   //Columns
+  @Default(false)
+  @Column({ type: DataType.BOOLEAN })
+  enabled!: string;
   @AllowNull(true)
   @Column({ type: DataType.TEXT })
   description!: string;
@@ -56,8 +64,8 @@ export default class Scene extends Model<
   @Column({ type: DataType.JSONB })
   extra!: Object;
   @AllowNull(true)
-  @Column({ type: DataType.JSONB })
-  rules!: Object;
+  @Column({ type: DataType.ARRAY(DataType.JSONB) })
+  rules!: Object[];
 
   //Relationships
 

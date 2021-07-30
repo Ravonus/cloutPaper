@@ -51,6 +51,11 @@ __decorate([
     __metadata("design:type", String)
 ], Library.prototype, "path", void 0);
 __decorate([
+    sequelize_typescript_1.Default(true),
+    sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.BOOLEAN }),
+    __metadata("design:type", Boolean)
+], Library.prototype, "enabled", void 0);
+__decorate([
     sequelize_typescript_1.AllowNull(true),
     sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.TEXT }),
     __metadata("design:type", String)

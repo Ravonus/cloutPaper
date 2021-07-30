@@ -21,13 +21,11 @@ const Library = ({ darkmode }) => {
     const [items, setItems] = react_1.useState([]);
     react_1.useEffect(() => {
         (() => __awaiter(void 0, void 0, void 0, function* () {
-            (() => __awaiter(void 0, void 0, void 0, function* () {
-                const result = yield electron_1.ipcRenderer.invoke('database', {
-                    type: 'read',
-                    model: 'Library',
-                });
-                setItems(result);
-            }))();
+            const result = yield electron_1.ipcRenderer.invoke('database', {
+                type: 'read',
+                model: 'Library',
+            });
+            setItems(result);
         }))();
     }, []);
     return (jsx_runtime_1.jsxs("div", Object.assign({ className: 'text-center l flex flex-col justify justify-center dark:text-primary' }, { children: [jsx_runtime_1.jsx("div", Object.assign({ className: 'container grid grid-cols-3 gap-4' }, { children: items.map((opt, i) => {

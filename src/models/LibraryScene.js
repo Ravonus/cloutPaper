@@ -51,7 +51,7 @@ __decorate([
 ], LibraryScene.prototype, "rules", void 0);
 __decorate([
     sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.ARRAY(sequelize_typescript_1.DataType.NUMBER) }),
-    __metadata("design:type", Array)
+    __metadata("design:type", Object)
 ], LibraryScene.prototype, "monitors", void 0);
 __decorate([
     sequelize_typescript_1.Column({ type: sequelize_typescript_1.DataType.FLOAT }),

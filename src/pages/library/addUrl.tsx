@@ -28,10 +28,11 @@ export const AddUrl: FC<UrlProps> = ({ darkmode }) => {
     const info = await ipcRenderer.invoke('apiMain', {
       values: {
         type: 'html5',
+        enabled: true,
         path: url,
         title,
         description,
-        extra: { bg: color },
+        extra: { bg: color, external: true },
       },
       table: 'Library',
       method: 'create',

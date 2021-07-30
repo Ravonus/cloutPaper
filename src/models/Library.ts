@@ -15,6 +15,7 @@ import {
   Table,
   Column,
   Model,
+  Default,
   AllowNull,
   DataType,
   BelongsTo,
@@ -32,14 +33,16 @@ let firstRun = true;
 
 export interface LibraryAttributes {
   id: number;
+  enabled: boolean;
   type: 'html5' | 'video' | 'picture';
-  extra?: Object;
+  extra: Object;
   path: string;
   title: string;
   description: string;
 }
 
-interface LibraryCreationAttributes extends Optional<LibraryAttributes, 'id'> {}
+interface LibraryCreationAttributes
+  extends Optional<LibraryAttributes, 'id' | 'extra'> {}
 
 @Table({ timestamps: true })
 export default class Library extends Model<
@@ -60,13 +63,15 @@ export default class Library extends Model<
   @AllowNull(false)
   @Column({ type: DataType.TEXT })
   path!: string;
+  @Default(true)
+  @Column({ type: DataType.BOOLEAN })
+  enabled!: boolean;
   @AllowNull(true)
   @Column({ type: DataType.TEXT })
   description!: string;
   @AllowNull(true)
   @Column({ type: DataType.TEXT })
   title!: string;
-
   @AllowNull(true)
   @Column({ type: DataType.JSONB })
   extra!: Object;

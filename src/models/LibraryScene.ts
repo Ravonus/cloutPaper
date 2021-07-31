@@ -37,7 +37,7 @@ import { Optional } from '../../../../nodePaper/node_modules/sequelize';
 import Library from './Library';
 import Scene from './Scene';
 
-interface LibrarySceneAttributes {
+export interface LibrarySceneAttributes {
   id: number;
   sceneId: number;
   libraryId: number;

@@ -19,11 +19,12 @@ interface SceneProps {
 
 interface OptionsAttributes {
   value: number;
-  label: string;
+  label?: string;
 }
 
 interface SelectedOptionAttributes {
-  [key: string]: {};
+  value: number;
+  label?: string;
 }
 
 export const AddScene: FC<SceneProps> = ({ darkmode }) => {
@@ -35,7 +36,9 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
   const [docs, setDocs] = useState<{ [key: string]: LibraryAttributes }>({});
   const [selectedDoc, setSelectedDoc] = useState<LibraryAttributes>();
   const [selectedOption, setSelectedOption] = useState<OptionsAttributes>();
-  const [monitorThumb, setMonitorThumb] = useState<{ [key: string]: {} }>({});
+  const [monitorThumb, setMonitorThumb] = useState<{ [key: string]: number[] }>(
+    {}
+  );
   const [selectedOptions, setSelectedOptions] = useState<
     SelectedOptionAttributes[]
   >([]);
@@ -77,9 +80,28 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
       options.splice(removeIndex, 1);
     }
     setSelectedOption(selectedOption);
-    await setSelectedOptions([...options, { value: 'none' }]);
+    await setSelectedOptions([...options, { value: 13371337 }]);
     await setSelectedOptions(options);
   };
+
+  async function handleThumbClick(i: number) {
+    if (!selectedDoc) return;
+    if (
+      monitorThumb[selectedDoc.id] &&
+      monitorThumb[selectedDoc.id].includes(i)
+    ) {
+      const index = monitorThumb[selectedDoc.id].indexOf(i);
+      monitorThumb[selectedDoc.id].splice(index, 1);
+    } else if (!monitorThumb[selectedDoc.id]) {
+      monitorThumb[selectedDoc.id] = [i];
+    } else {
+      monitorThumb[selectedDoc.id].push(i);
+    }
+    await setMonitorThumb(monitorThumb);
+    const cacheDisplays = displays;
+    await setDisplays([]);
+    await setDisplays(cacheDisplays);
+  }
 
   return (
     <div className='dark:text-primary container'>
@@ -87,7 +109,9 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
         <div className='flex justify-center overflow-hidden'>
           {displays.map(function (display, i) {
             {
-              return monitorThumb[i.toString()] ? (
+              return selectedDoc &&
+                monitorThumb[selectedDoc.id] &&
+                monitorThumb[selectedDoc.id].includes(i) ? (
                 <div
                   key={`displayThumb-${i}`}
                   id={`displayThumb-${i}`}
@@ -111,20 +135,7 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
 
                   <div
                     style={{ width: 128, height: 128 }}
-                    onClick={async function () {
-                      if (monitorThumb[i]) {
-                        delete monitorThumb[i];
-                        await setMonitorThumb(monitorThumb);
-                      } else {
-                        monitorThumb[i] = true;
-                        await setMonitorThumb(monitorThumb);
-                      }
-
-                      const cacheDisplays = displays;
-
-                      await setDisplays([]);
-                      await setDisplays(cacheDisplays);
-                    }}
+                    onClick={() => handleThumbClick(i)}
                     // style={{ pointerEvents: 'none' }}
                     className='absolute top-0 left-0 cursor-pointer w-32 h-32 overflow-hidden cursor-pointer border-secondary dark:border-primary border hover:border-primary dark:border dark:hover:border-secondary'
                   />
@@ -135,19 +146,7 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
                   id={`displayThumb-${i}`}
                   style={{ fontSize: 100, textAlign: 'center' }}
                   className='cursor-pointer m-4 w-32 h-32 px-4 overflow-hidden bg-gray-200 dark:bg-gray-600 border-secondary dark:border-primary border hover:border-primary dark:border dark:hover:border-secondary hover:bg-gray-300 dark:hover:bg-gray-500'
-                  onClick={async () => {
-                    if (monitorThumb[i]) {
-                      delete monitorThumb[i];
-                      setMonitorThumb(monitorThumb);
-                    } else {
-                      monitorThumb[i] = true;
-                      setMonitorThumb(monitorThumb);
-                    }
-                    const cacheDisplays = displays;
-
-                    await setDisplays([]);
-                    await setDisplays(cacheDisplays);
-                  }}
+                  onClick={() => handleThumbClick(i)}
                 >
                   <span> {i + 1}</span>
                 </div>
@@ -214,14 +213,6 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
       <SecondaryButton
         text={'Create'}
         onClick={async () => {
-          // const windows = await ipcRenderer.invoke('windows', '');
-          // console.log('WINDOWS', windows);
-          // // const windows = await grabWindows();
-          // windows?.webContents.send(
-          //   'setWallpaper',
-          //   'http://html5wallpaper.com/wp-depo/800/'
-          // );
-
           const values: SceneCreationAttributes = {
             title,
             enabled: true,
@@ -235,28 +226,41 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
             type: 'database',
           });
 
-          if (!info.doc) {
-          } else {
-            if (!selectedOption) return;
-            const values: LibrarySceneCreationAttributes = {
-              libraryId: selectedOption?.value,
-              sceneId: info.doc.id,
-              enabled: true,
-              monitors: [0, 1],
-            };
-            const libraryScene = await ipcRenderer.invoke('apiMain', {
-              values,
-              table: 'LibraryScene',
-              method: 'create',
-              type: 'database',
-            });
-            console.log('DONE', libraryScene);
-          }
+          selectedOptions.map(async (option) => {
+            // const windows = await ipcRenderer.invoke('windows', '');
+            // console.log('WINDOWS', windows);
+            // // const windows = await grabWindows();
+            // windows?.webContents.send(
+            //   'setWallpaper',
+            //   'http://html5wallpaper.com/wp-depo/800/'
+            // );
 
-          // ipcRenderer.send(
-          //   'setWallpaper',
-          //   'http://html5wallpaper.com/wp-depo/800/'
-          // );
+            if (!info.doc) {
+            } else {
+              if (!option.label) return;
+              const monitors = monitorThumb[option.value];
+              console.log('DOC', monitors, option?.value, info.doc.id);
+
+              const values: LibrarySceneCreationAttributes = {
+                libraryId: option?.value,
+                sceneId: info.doc.id,
+                enabled: true,
+                monitors,
+              };
+              const libraryScene = await ipcRenderer.invoke('apiMain', {
+                values,
+                table: 'LibraryScene',
+                method: 'create',
+                type: 'database',
+              });
+              console.log('DONE', libraryScene);
+            }
+
+            // ipcRenderer.send(
+            //   'setWallpaper',
+            //   'http://html5wallpaper.com/wp-depo/800/'
+            // );
+          });
         }}
       />
       <BottomBar

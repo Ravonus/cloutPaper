@@ -5,8 +5,6 @@ import { Internal } from './internal';
 
 // import './index.scss';
 
-console.log('DUDE');
-
 render(
   <>
     {/* <Internal></Internal> */}

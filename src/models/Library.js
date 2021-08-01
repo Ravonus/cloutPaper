@@ -71,9 +71,9 @@ __decorate([
     __metadata("design:type", Object)
 ], Library.prototype, "extra", void 0);
 __decorate([
-    sequelize_typescript_1.BelongsToMany(() => Scene_1.default, () => LibraryScene_1.default, 'sceneId', 'libraryId'),
+    sequelize_typescript_1.BelongsToMany(() => Scene_1.default, () => LibraryScene_1.default, 'libraryId'),
     __metadata("design:type", Array)
-], Library.prototype, "items", void 0);
+], Library.prototype, "scenes", void 0);
 Library = __decorate([
     sequelize_typescript_1.Table({ timestamps: true })
 ], Library);

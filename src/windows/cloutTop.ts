@@ -20,11 +20,37 @@ interface WallpaperProps {}
 
 interface BrowserWindowExtended extends BrowserWindow {
   displayId?: number;
+  index?: string;
 }
+
+const symbols: { [key: string]: string } = {
+  '`': '~',
+  0: ')',
+  1: '!',
+  2: '@',
+  3: '#',
+  4: '$',
+  5: '%',
+  6: '^',
+  7: '&',
+  8: '*',
+  9: '(',
+  '-': '_',
+  '=': '+',
+  '[': '{',
+  ']': '}',
+  '\\': '|',
+  ';': ':',
+  "'": '"',
+  ',': '<',
+  '.': '>',
+  '/': '?',
+};
 
 const displays = screen.getAllDisplays();
 
-function capitalizeFirstLetter(string: string) {
+function capitalizeFirstLetter(string?: string) {
+  if (!string) return;
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
@@ -32,21 +58,27 @@ function grabWindowByDisplayId(
   display: Electron.Display,
   adjustedPoint: Electron.Point
 ) {
-  let index = 0;
   let { x, y } = adjustedPoint;
+  let windows: BrowserWindowExtended[] = [];
   let found = false;
+
   displayWindows.map((window, i) => {
     if (window.displayId === display.id) {
-      index = i;
-      found = true;
-    } else if (!found) {
-      const size = window.getSize();
+      windows.push(displayWindows[i]);
 
-      x = x - size[0];
+      if (!found) {
+        for (let index = 0; index < Number(window.index); index++) {
+          const display = displays[index];
+          const { width } = display.size;
+          x = x - width;
+        }
+        found = true;
+      }
+      //  console.log('PUSHED', windows);
     }
   });
 
-  return { window: displayWindows[index], point: { x, y } };
+  return { windows, point: { x, y } };
 }
 
 function grabDisplay() {
@@ -68,10 +100,13 @@ export default async () => {
   await asyncForEach(libraryScenes, async (scene: LibraryScene) => {
     const library = await scene.$get('library');
 
-    const displayIndex =
-      typeof scene?.monitors === 'string' ? scene.monitors.split(',') : '';
+    if (!scene.monitors) return;
+    let displayIndex =
+      typeof scene?.monitors === 'string'
+        ? scene.monitors.split(',')
+        : [scene.monitors.toString()];
 
-    if (!displayIndex) return;
+    if (!displayIndex || typeof displayIndex === 'string') return;
 
     displayIndex.map((i) => {
       const display = displays[Number(i)];
@@ -93,7 +128,7 @@ export default async () => {
 
       window.setBounds(display.bounds);
       window.setKiosk(true);
-      //window.webContents.openDevTools();
+      //  window.webContents.openDevTools();
       window.webContents.on('did-navigate', () => {
         setTimeout(() => {
           wallpaper.attachWindow(window);
@@ -101,94 +136,202 @@ export default async () => {
       });
 
       let url = library?.path;
+
+      //  console.log(url, displayIndex);
+
       window?.loadURL(
         `file://${__dirname}/index.html?url=${url}&displayIndex=${i}&bg=background-color: rgba(255, 255, 255, 0) !important; background: rgba(255, 255, 255, 0) !important;`
       );
 
       window.displayId = display.id;
 
+      window.index = i;
+
       displayWindows.push(window);
     });
+  });
 
-    ipcMain.handle('setWallpaper', (event, { url, display, bg }) => {
-      displayWindows[display]?.loadURL(
-        `file://${__dirname}/index.html?url=${url}&displayIndex=${display}&bg=${bg}`
-      );
+  globalKeys.on('mousemove', (event: any) => {
+    const { mousePointerDisplay, adjustedPoint } = grabDisplay();
 
-      return true;
+    const { windows, point } = grabWindowByDisplayId(
+      mousePointerDisplay,
+      adjustedPoint
+    );
+
+    windows.map((window) => {
+      //  window.webContents.send('mousemove', point);
+      const { x, y } = point;
+      window.webContents.sendInputEvent({
+        type: 'mouseMove',
+        x,
+        y,
+      });
     });
+  });
 
-    globalKeys.on('mousemove', (event: any) => {
+  globalKeys.on('mousedrag', (event: any) => {
+    const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+
+    const { windows, point } = grabWindowByDisplayId(
+      mousePointerDisplay,
+      adjustedPoint
+    );
+
+    windows.map(function (window) {
+      const { x, y } = point;
+      window.webContents.sendInputEvent({
+        type: 'mouseMove',
+        x,
+        y,
+      });
+    });
+  });
+
+  globalKeys.on('mouseup', (event: any) => {
+    if (event.button === 1) {
       const { mousePointerDisplay, adjustedPoint } = grabDisplay();
 
-      const { window, point } = grabWindowByDisplayId(
+      const { windows, point } = grabWindowByDisplayId(
         mousePointerDisplay,
         adjustedPoint
       );
 
-      window?.webContents.send('mousemove', point);
-    });
-
-    globalKeys.on('mousedrag', (event: any) => {
-      const { mousePointerDisplay, adjustedPoint } = grabDisplay();
-
-      const { window, point } = grabWindowByDisplayId(
-        mousePointerDisplay,
-        adjustedPoint
-      );
-      window?.webContents.send('mousemove', point);
-    });
-
-    globalKeys.on('mouseup', (event: any) => {
-      if (event.button === 1) {
-        const { mousePointerDisplay, adjustedPoint } = grabDisplay();
-
-        const { window, point } = grabWindowByDisplayId(
-          mousePointerDisplay,
-          adjustedPoint
-        );
-
+      windows.map((window) => {
+        // const { x, y } = point;
+        // window.webContents.sendInputEvent({
+        //   type: 'mouseUp',
+        //   x,
+        //   y,
+        //   button: 'left',
+        //   clickCount: 1,
+        // });
         window?.webContents.send('mouseup', point);
-      }
-    });
+      });
+    }
+  });
 
-    globalKeys.on('mousedown', (event: any) => {
-      if (event.button === 1) {
-        const { mousePointerDisplay, adjustedPoint } = grabDisplay();
-
-        const { window, point } = grabWindowByDisplayId(
-          mousePointerDisplay,
-          adjustedPoint
-        );
-
-        window?.webContents.send('mousedown', point);
-      }
-    });
-
-    globalKeys.on('keydown', (event: any) => {
+  globalKeys.on('mousedown', (event: any) => {
+    if (event.button === 1) {
       const { mousePointerDisplay, adjustedPoint } = grabDisplay();
 
-      const { window } = grabWindowByDisplayId(
+      const { windows, point } = grabWindowByDisplayId(
         mousePointerDisplay,
         adjustedPoint
       );
 
-      try {
-        let key =
-          keycode(event.rawcode).length > 1
-            ? capitalizeFirstLetter(keycode(event.rawcode))
-            : keycode(event.rawcode);
+      windows.map((window) => {
+        // const { x, y } = point;
+        // window.webContents.sendInputEvent({
+        //   type: 'mouseDown',
+        //   x,
+        //   y,
+        //   button: 'left',
+        //   clickCount: 1,
+        // });
+        window?.webContents.send('mousedown', point);
+      });
+    }
+  });
 
-        if (key === 'Space') key = ' ';
+  globalKeys.on('keydown', (event: any) => {
+    const { mousePointerDisplay, adjustedPoint } = grabDisplay();
 
-        window?.webContents.send('keydown', key);
-      } catch (e) {
-        console.log(e);
+    const { windows } = grabWindowByDisplayId(
+      mousePointerDisplay,
+      adjustedPoint
+    );
+
+    try {
+      let key =
+        keycode(event.rawcode) && keycode(event.rawcode).length > 1
+          ? capitalizeFirstLetter(keycode(event.rawcode))
+          : keycode(event.rawcode);
+
+      if (key === 'Space') key = ' ';
+
+      if (event.ctrlKey) {
+        key = `CommandOrControl+${capitalizeFirstLetter(key)}`;
       }
-    });
 
-    //Register and start hook
-    globalKeys.start(false);
+      if (event.altKey) {
+        key = `Alt+${key}`;
+      }
+      if (event.shiftKey) {
+        console.log('leys:', keycode(event.keycode), keycode(event.rawcode));
+        if (!key) return;
+
+        if (parseInt(key).toString() !== 'NaN') {
+          key = symbols[key];
+        } else {
+          key = capitalizeFirstLetter(key);
+        }
+      }
+
+      windows.map((window) => {
+        window.webContents.send('keydown', key);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  });
+
+  globalKeys.on('keyup', (event: any) => {
+    const { mousePointerDisplay, adjustedPoint } = grabDisplay();
+
+    const { windows } = grabWindowByDisplayId(
+      mousePointerDisplay,
+      adjustedPoint
+    );
+
+    try {
+      let key =
+        keycode(event.rawcode) && keycode(event.rawcode).length > 1
+          ? capitalizeFirstLetter(keycode(event.rawcode))
+          : keycode(event.rawcode);
+
+      if (key === 'Space') key = ' ';
+
+      if (event.ctrlKey) {
+        key = `CommandOrControl+${capitalizeFirstLetter(key)}`;
+      }
+
+      if (event.altKey) {
+        key = `Alt+${key}`;
+      }
+
+      if (event.shiftKey) {
+        console.log(
+          'leys:',
+          keycode(event.keycode),
+          keycode(event.rawcode),
+          event
+        );
+        if (!key) return;
+        if (parseInt(key).toString() !== 'NaN') {
+          key = keycode(event.keycode);
+        } else {
+          key = capitalizeFirstLetter(key);
+        }
+      }
+
+      windows.map((window) => {
+        window?.webContents.send('keyup', key);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  });
+
+  //Register and start hook
+  globalKeys.start(false);
+
+  ipcMain.handle('setWallpaper', (event, { url, display, bg }) => {
+    displayWindows[display]?.loadURL(
+      `file://${__dirname}/index.html?url=${url}&displayIndex=${display}&bg=${bg}`
+    );
+
+    return true;
   });
 
   // displays.map((display, i) => {
@@ -281,28 +424,6 @@ export default async () => {
   //   }
   // });
 
-  // globalKeys.on('keydown', (event: any) => {
-  //   const { mousePointerDisplay, adjustedPoint } = grabDisplay();
-
-  //   const { window } = grabWindowByDisplayId(
-  //     mousePointerDisplay,
-  //     adjustedPoint
-  //   );
-
-  //   try {
-  //     let key =
-  //       keycode(event.rawcode).length > 1
-  //         ? capitalizeFirstLetter(keycode(event.rawcode))
-  //         : keycode(event.rawcode);
-
-  //     if (key === 'Space') key = ' ';
-
-  //     window?.webContents.send('keydown', key);
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // });
-
   // //Register and start hook
-  // globalKeys.start(false);
+  globalKeys.start(false);
 };

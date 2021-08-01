@@ -10,6 +10,11 @@ import { renderInputHandle } from '../libs/renderInputHandle';
 
 interface ExternalProps {}
 
+interface HTMLElementExtended extends HTMLElement {
+  insertCSS: any;
+  sendInputEvent: any;
+}
+
 const { BrowserWindow, screen } = remote;
 
 const query: any = querystring.parse(global.location.search);
@@ -17,105 +22,120 @@ const query: any = querystring.parse(global.location.search);
 const displayIndex: number = query.displayIndex;
 const bg = query.bg;
 
+let firstRun = true;
+
 export function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function findWebview(displays: any) {
-  const webview: any = document.getElementById('foo');
-
-  if (!webview) {
-    await wait(100);
-    findWebview(displays);
-  }
-
-  webview.addEventListener('did-stop-loading', loadstop);
-
-  function loadstop() {
-    webview.insertCSS(
-      `html,body{ overflow:hidden; ${bg}}, ::-webkit - scrollbar{display: none;}`
-    );
-
-    setTimeout(() => {
-      // webview.sendInputEvent({ type: 'mouseDown', x: 1263, y: 730, button: 'left', clickCount: 100 });
-      // webview.sendInputEvent({ type: 'mouseUp', x: 1263, y: 730, button: 'left', clickCount: 1 });
-      var b = document.body;
-      b.addEventListener(
-        'click',
-        function (event) {
-          console.log(event.pageX, event.pageY);
-        },
-        false
-      );
-      //   webview.sendInputEvent({ type: 'mouseUp', x: 1263, y: 730, button: 'left', globalX: 1263, globalY: 730 });
-      webview.insertBefore;
-    }, 5000);
-  }
-
-  // webview.openDevTools();
-
-  renderInputHandle(webview);
-
-  // ipcRenderer.on('mousedown', (event, result) => {
-  //   let { x, y } = result;
-
-  //   webview.sendInputEvent({
-  //     type: 'mousedown',
-  //     x,
-  //     y,
-  //     button: 'left',
-  //     clickCount: 1,
-  //   });
-  // });
-
-  // ipcRenderer.on('mouseup', (event, result) => {
-  //   let { x, y } = result;
-
-  //   webview.sendInputEvent({
-  //     type: 'mouseup',
-  //     x,
-  //     y,
-  //     button: 'left',
-  //     clickCount: 1,
-  //   });
-  // });
-
-  // ipcRenderer.on('keydown', (event, keyCode) => {
-  //   webview.sendInputEvent({
-  //     type: keyCode.length > 1 ? 'keyUp' : 'char',
-  //     keyCode,
-  //   });
-  // });
-
-  // ipcRenderer.on('keyup', (event, keyInfo) => {
-  //   const keyCode = keyInfo.rawcode.toString();
-
-  //   // var evt = new KeyboardEvent('keyup', { keyCode });
-  //   // document.dispatchEvent(evt);
-  //   webview.sendInputEvent({
-  //     type: 'char',
-  //     keyCode,
-  //   });
-  // });
-
-  // ipcRenderer.on('mousemove', (event, result) => {
-  //   const { x, y } = result;
-
-  //   webview.sendInputEvent({
-  //     type: 'mousemove',
-  //     x,
-  //     y,
-  //   });
-  // });
-
-  // webview.style.width = '1'
-  webview.style.width = `${displays[displayIndex].size.width}px`;
-  webview.style.height = `${displays[displayIndex].size.height}px`;
 }
 
 export const External: FC<ExternalProps> = () => {
   const [site, setSite] = useState(query['?url']);
   const displays = screen.getAllDisplays();
+
+  async function findWebview(displays: any) {
+    let webview: HTMLElementExtended = document.getElementById(
+      'foo'
+    ) as HTMLElementExtended;
+
+    if (!webview) {
+      console.log('NO FOUND');
+      await wait(1000);
+      webview = await findWebview(displays);
+      return webview;
+    }
+
+    webview.addEventListener('did-stop-loading', function () {
+      if (!firstRun) return;
+
+      firstRun = false;
+      ipcRenderer.removeAllListeners('mouseup');
+      ipcRenderer.removeAllListeners('mousedown');
+      ipcRenderer.removeAllListeners('keydown');
+      webview.insertCSS(
+        `html,body{ overflow:hidden; ${bg}}, ::-webkit - scrollbar{display: none;}`
+      );
+
+      setTimeout(() => {
+        // webview.sendInputEvent({ type: 'mouseDown', x: 1263, y: 730, button: 'left', clickCount: 100 });
+        // webview.sendInputEvent({ type: 'mouseUp', x: 1263, y: 730, button: 'left', clickCount: 1 });
+        var b = document.body;
+        b.addEventListener(
+          'click',
+          function (event) {
+            console.log('TERDS');
+            console.log(event.pageX, event.pageY);
+          },
+          false
+        );
+        //   webview.sendInputEvent({ type: 'mouseUp', x: 1263, y: 730, button: 'left', globalX: 1263, globalY: 730 });
+        webview.insertBefore;
+      }, 5000);
+
+      //webview.openDevTools();
+
+      //renderInputHandle(webview);
+
+      ipcRenderer.on('mousedown', (event, result) => {
+        let { x, y } = result;
+
+        webview.sendInputEvent({
+          type: 'mouseDown',
+          x,
+          y,
+          button: 'left',
+          clickCount: 1,
+        });
+      });
+
+      ipcRenderer.on('mouseup', (event, result) => {
+        let { x, y } = result;
+        console.log(x, y, webview);
+        webview.sendInputEvent({
+          type: 'mouseup',
+          x,
+          y,
+          button: 'left',
+          clickCount: 1,
+        });
+      });
+
+      ipcRenderer.on('keydown', (event, keyCode) => {
+        console.log(keyCode, 'WTF', webview);
+        webview.sendInputEvent({
+          type: keyCode.length > 1 ? 'keyDown' : 'char',
+          keyCode,
+        });
+      });
+
+      ipcRenderer.on('keyup', (event, keyCode) => {
+        // var evt = new KeyboardEvent('keyup', { keyCode });
+        // document.dispatchEvent(evt);
+        if (keyCode.length > 1) {
+          webview.sendInputEvent({
+            type: 'keyUp',
+            keyCode,
+          });
+        }
+      });
+
+      ipcRenderer.on('mousemove', (event, result) => {
+        const { x, y } = result;
+
+        console.log('ERT', result);
+
+        webview.sendInputEvent({
+          type: 'mouseMove',
+          x,
+          y,
+        });
+      });
+    });
+
+    // webview.style.width = '1'
+    webview.style.width = `${displays[displayIndex].size.width}px`;
+    webview.style.height = `${displays[displayIndex].size.height}px`;
+    return webview;
+  }
 
   ipcRenderer.on('setWallpaper', (event, result) => {
     console.log(result);
@@ -125,7 +145,7 @@ export const External: FC<ExternalProps> = () => {
 
   useEffect(() => {
     findWebview(displays);
-  });
+  }, []);
 
   return <webview id='foo' src={site}></webview>;
 };

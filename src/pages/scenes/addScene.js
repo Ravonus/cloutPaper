@@ -63,12 +63,35 @@ const AddScene = ({ darkmode }) => {
             options.splice(removeIndex, 1);
         }
         setSelectedOption(selectedOption);
-        yield setSelectedOptions([...options, { value: 'none' }]);
+        yield setSelectedOptions([...options, { value: 13371337 }]);
         yield setSelectedOptions(options);
     });
+    function handleThumbClick(i) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!selectedDoc)
+                return;
+            if (monitorThumb[selectedDoc.id] &&
+                monitorThumb[selectedDoc.id].includes(i)) {
+                const index = monitorThumb[selectedDoc.id].indexOf(i);
+                monitorThumb[selectedDoc.id].splice(index, 1);
+            }
+            else if (!monitorThumb[selectedDoc.id]) {
+                monitorThumb[selectedDoc.id] = [i];
+            }
+            else {
+                monitorThumb[selectedDoc.id].push(i);
+            }
+            yield setMonitorThumb(monitorThumb);
+            const cacheDisplays = displays;
+            yield setDisplays([]);
+            yield setDisplays(cacheDisplays);
+        });
+    }
     return (jsx_runtime_1.jsxs("div", Object.assign({ className: 'dark:text-primary container' }, { children: [jsx_runtime_1.jsx(Side_1.default, Object.assign({ title: selectedDoc === null || selectedDoc === void 0 ? void 0 : selectedDoc.title, open: openPanel, setOpen: setOpenPanel }, { children: jsx_runtime_1.jsx("div", Object.assign({ className: 'flex justify-center overflow-hidden' }, { children: displays.map(function (display, i) {
                         {
-                            return monitorThumb[i.toString()] ? (jsx_runtime_1.jsxs("div", Object.assign({ id: `displayThumb-${i}`, style: {
+                            return selectedDoc &&
+                                monitorThumb[selectedDoc.id] &&
+                                monitorThumb[selectedDoc.id].includes(i) ? (jsx_runtime_1.jsxs("div", Object.assign({ id: `displayThumb-${i}`, style: {
                                     fontSize: 100,
                                     textAlign: 'center',
                                     width: 128,
@@ -77,35 +100,9 @@ const AddScene = ({ darkmode }) => {
                                             border: 'none',
                                             width: 128,
                                             height: 128,
-                                        }, id: `webview-${selectedDoc === null || selectedDoc === void 0 ? void 0 : selectedDoc.id}`, src: selectedDoc === null || selectedDoc === void 0 ? void 0 : selectedDoc.path }, void 0), jsx_runtime_1.jsx("div", { style: { width: 128, height: 128 }, onClick: function () {
-                                            return __awaiter(this, void 0, void 0, function* () {
-                                                if (monitorThumb[i]) {
-                                                    delete monitorThumb[i];
-                                                    yield setMonitorThumb(monitorThumb);
-                                                }
-                                                else {
-                                                    monitorThumb[i] = true;
-                                                    yield setMonitorThumb(monitorThumb);
-                                                }
-                                                const cacheDisplays = displays;
-                                                yield setDisplays([]);
-                                                yield setDisplays(cacheDisplays);
-                                            });
-                                        }, 
+                                        }, id: `webview-${selectedDoc === null || selectedDoc === void 0 ? void 0 : selectedDoc.id}`, src: selectedDoc === null || selectedDoc === void 0 ? void 0 : selectedDoc.path }, void 0), jsx_runtime_1.jsx("div", { style: { width: 128, height: 128 }, onClick: () => handleThumbClick(i), 
                                         // style={{ pointerEvents: 'none' }}
-                                        className: 'absolute top-0 left-0 cursor-pointer w-32 h-32 overflow-hidden cursor-pointer border-secondary dark:border-primary border hover:border-primary dark:border dark:hover:border-secondary' }, void 0)] }), `displayThumb-${i}`)) : (jsx_runtime_1.jsx("div", Object.assign({ id: `displayThumb-${i}`, style: { fontSize: 100, textAlign: 'center' }, className: 'cursor-pointer m-4 w-32 h-32 px-4 overflow-hidden bg-gray-200 dark:bg-gray-600 border-secondary dark:border-primary border hover:border-primary dark:border dark:hover:border-secondary hover:bg-gray-300 dark:hover:bg-gray-500', onClick: () => __awaiter(this, void 0, void 0, function* () {
-                                    if (monitorThumb[i]) {
-                                        delete monitorThumb[i];
-                                        setMonitorThumb(monitorThumb);
-                                    }
-                                    else {
-                                        monitorThumb[i] = true;
-                                        setMonitorThumb(monitorThumb);
-                                    }
-                                    const cacheDisplays = displays;
-                                    yield setDisplays([]);
-                                    yield setDisplays(cacheDisplays);
-                                }) }, { children: jsx_runtime_1.jsxs("span", { children: [" ", i + 1] }, void 0) }), `displayThumb-${i}`));
+                                        className: 'absolute top-0 left-0 cursor-pointer w-32 h-32 overflow-hidden cursor-pointer border-secondary dark:border-primary border hover:border-primary dark:border dark:hover:border-secondary' }, void 0)] }), `displayThumb-${i}`)) : (jsx_runtime_1.jsx("div", Object.assign({ id: `displayThumb-${i}`, style: { fontSize: 100, textAlign: 'center' }, className: 'cursor-pointer m-4 w-32 h-32 px-4 overflow-hidden bg-gray-200 dark:bg-gray-600 border-secondary dark:border-primary border hover:border-primary dark:border dark:hover:border-secondary hover:bg-gray-300 dark:hover:bg-gray-500', onClick: () => handleThumbClick(i) }, { children: jsx_runtime_1.jsxs("span", { children: [" ", i + 1] }, void 0) }), `displayThumb-${i}`));
                         }
                     }) }), void 0) }), void 0), jsx_runtime_1.jsx("div", Object.assign({ className: 'pt-5', style: { width: 350 } }, { children: jsx_runtime_1.jsx(react_select_1.default, { value: selectedOption, onChange: handleChange, options: options }, void 0) }), void 0), jsx_runtime_1.jsx(Inputs_1.InputFloat, { label: 'Title', name: 'title', id: 'title', value: title, setValue: setTitle }, void 0), jsx_runtime_1.jsx(Inputs_1.InputFloat, { label: 'Description', name: 'Description', id: 'Description', value: description, setValue: setDescription }, void 0), jsx_runtime_1.jsx("div", Object.assign({ className: 'grid grid-cols-3 gap-2' }, { children: selectedOptions.map(function (selection, i) {
                     let foundDoc = docs[selection.label];
@@ -123,13 +120,6 @@ const AddScene = ({ darkmode }) => {
                                 // style={{ pointerEvents: 'none' }}
                                 className: 'group-hover:bg-transparent bg-gray-500 bg-opacity-25 h-full w-full absolute top-0 left-0 cursor-pointer' }, void 0)] }), `webview-${foundDoc === null || foundDoc === void 0 ? void 0 : foundDoc.id}`));
                 }) }), void 0), jsx_runtime_1.jsx(index_1.SecondaryButton, { text: 'Create', onClick: () => __awaiter(void 0, void 0, void 0, function* () {
-                    // const windows = await ipcRenderer.invoke('windows', '');
-                    // console.log('WINDOWS', windows);
-                    // // const windows = await grabWindows();
-                    // windows?.webContents.send(
-                    //   'setWallpaper',
-                    //   'http://html5wallpaper.com/wp-depo/800/'
-                    // );
                     const values = {
                         title,
                         enabled: true,
@@ -141,29 +131,40 @@ const AddScene = ({ darkmode }) => {
                         method: 'create',
                         type: 'database',
                     });
-                    if (!info.doc) {
-                    }
-                    else {
-                        if (!selectedOption)
-                            return;
-                        const values = {
-                            libraryId: selectedOption === null || selectedOption === void 0 ? void 0 : selectedOption.value,
-                            sceneId: info.doc.id,
-                            enabled: true,
-                            monitors: [0, 1],
-                        };
-                        const libraryScene = yield renderer_1.ipcRenderer.invoke('apiMain', {
-                            values,
-                            table: 'LibraryScene',
-                            method: 'create',
-                            type: 'database',
-                        });
-                        console.log('DONE', libraryScene);
-                    }
-                    // ipcRenderer.send(
-                    //   'setWallpaper',
-                    //   'http://html5wallpaper.com/wp-depo/800/'
-                    // );
+                    selectedOptions.map((option) => __awaiter(void 0, void 0, void 0, function* () {
+                        // const windows = await ipcRenderer.invoke('windows', '');
+                        // console.log('WINDOWS', windows);
+                        // // const windows = await grabWindows();
+                        // windows?.webContents.send(
+                        //   'setWallpaper',
+                        //   'http://html5wallpaper.com/wp-depo/800/'
+                        // );
+                        if (!info.doc) {
+                        }
+                        else {
+                            if (!option.label)
+                                return;
+                            const monitors = monitorThumb[option.value];
+                            console.log('DOC', monitors, option === null || option === void 0 ? void 0 : option.value, info.doc.id);
+                            const values = {
+                                libraryId: option === null || option === void 0 ? void 0 : option.value,
+                                sceneId: info.doc.id,
+                                enabled: true,
+                                monitors,
+                            };
+                            const libraryScene = yield renderer_1.ipcRenderer.invoke('apiMain', {
+                                values,
+                                table: 'LibraryScene',
+                                method: 'create',
+                                type: 'database',
+                            });
+                            console.log('DONE', libraryScene);
+                        }
+                        // ipcRenderer.send(
+                        //   'setWallpaper',
+                        //   'http://html5wallpaper.com/wp-depo/800/'
+                        // );
+                    }));
                 }) }, void 0), jsx_runtime_1.jsx(BottomBar_1.default, { buttonNames: ['home', 'library', 'scenes'], darkmode: darkmode }, void 0)] }), void 0));
 };
 exports.AddScene = AddScene;

@@ -86,6 +86,6 @@ export default class Library extends Model<
   // scene!: string;
 
   //Relationships
-  @BelongsToMany(() => Scene, () => LibraryScene, 'sceneId', 'libraryId')
-  items!: Array<Scene & { LibraryScene: LibraryScene }>;
+  @BelongsToMany(() => Scene, () => LibraryScene, 'libraryId')
+  scenes!: Array<Scene & { LibraryScene: LibraryScene }>;
 }

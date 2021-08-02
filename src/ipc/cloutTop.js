@@ -21,5 +21,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const cloutTop_1 = __importDefault(require("../windows/cloutTop"));
 exports.default = electron_1.ipcMain.handle('cloutTop', (event, opts) => __awaiter(void 0, void 0, void 0, function* () {
-    cloutTop_1.default();
+    cloutTop_1.default(opts);
 }));

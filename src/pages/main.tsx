@@ -21,7 +21,35 @@ interface MainProps {
   darkmode: boolean;
 }
 
-let firstRun = 0;
+let entered = 0;
+
+const dragover = (e: DragEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+};
+
+const dragenter = (event: DragEvent) => {
+  if (entered !== 0) console.log('File is in the Drop Space');
+
+  entered = 1;
+};
+
+const dragleave = (event: DragEvent) => {
+  if (entered === 0) console.log('File has left the Drop Space');
+  else entered--;
+};
+
+const drop = (event: DragEvent) => {
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (!event.dataTransfer) return;
+
+  for (const f of event?.dataTransfer.files) {
+    // Using the path attribute to get absolute file path
+    console.log('File Path of dragged files: ', f.path);
+  }
+};
 
 const Main: FC<MainProps> = ({
   setRoute,
@@ -98,6 +126,16 @@ const Main: FC<MainProps> = ({
   ];
 
   useEffect(() => {
+    document.removeEventListener('dragover', dragover);
+    document.removeEventListener('dragenter', dragenter);
+    document.removeEventListener('dragleave', dragleave);
+    document.removeEventListener('drag', drop);
+
+    document.addEventListener('dragover', dragover);
+    document.addEventListener('dragenter', dragenter);
+    document.addEventListener('dragleave', dragleave);
+    document.addEventListener('drop', drop);
+
     addPluginMenu(menu[1], 'plugins_ARPaper_library', {
       route: {
         name: 'library',

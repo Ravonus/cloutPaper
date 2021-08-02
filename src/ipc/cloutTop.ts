@@ -9,5 +9,5 @@ import { ipcMain } from 'electron';
 import cloutTop from '../windows/cloutTop';
 
 export default ipcMain.handle('cloutTop', async (event, opts) => {
-  cloutTop();
+  cloutTop(opts);
 });

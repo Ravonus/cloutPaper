@@ -27,20 +27,21 @@ const functions_1 = require("../functions");
 const IoHookHandle_1 = require("../libs/IoHookHandle");
 const displays = electron_1.screen.getAllDisplays();
 exports.displayWindows = [];
-exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
+exports.default = (opts) => __awaiter(void 0, void 0, void 0, function* () {
     exports.displayWindows.map(function (window, i) {
         window.close();
         delete exports.displayWindows[i];
     });
     const scenes = yield Scene_1.default.findAll({ where: { enabled: true } });
-    const scene = scenes[scenes.length - 1];
-    const libraryScenes = yield LibraryScene_1.default.findAll({
-        where: { sceneId: scene === null || scene === void 0 ? void 0 : scene.id },
-    });
-    yield functions_1.asyncForEach(libraryScenes, (scene) => __awaiter(void 0, void 0, void 0, function* () {
+    const scene = opts ? opts.Scene : scenes[scenes.length - 1];
+    const libraryScenes = opts
+        ? opts.LibraryScenes
+        : yield LibraryScene_1.default.findAll({
+            where: { sceneId: scene === null || scene === void 0 ? void 0 : scene.id },
+        });
+    yield functions_1.asyncForEach(libraryScenes, (scene, i) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
-        const library = yield scene.$get('library');
-        console.log('S', scene.monitors);
+        const library = opts ? opts.items[i] : yield scene.$get('library');
         if (!((_a = scene.monitors) === null || _a === void 0 ? void 0 : _a.toString()))
             return;
         let displayIndex = typeof (scene === null || scene === void 0 ? void 0 : scene.monitors) === 'string'
@@ -74,6 +75,7 @@ exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
             });
             let url = library === null || library === void 0 ? void 0 : library.path;
             //  console.log(url, displayIndex);
+            console.log('RAN', url, library);
             window === null || window === void 0 ? void 0 : window.loadURL(`file://${__dirname}/index.html?url=${url}&displayIndex=${i}&bg=background-color: rgba(255, 255, 255, 0) !important; background: rgba(255, 255, 255, 0) !important;`);
             window.displayId = display.id;
             window.index = i;

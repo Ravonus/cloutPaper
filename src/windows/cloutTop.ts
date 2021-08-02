@@ -28,21 +28,27 @@ const displays = screen.getAllDisplays();
 
 export const displayWindows: BrowserWindowExtended[] = [];
 
-export default async () => {
+export default async (opts?: {
+  Scene: Scene;
+  LibraryScenes: LibraryScene;
+  items: Library[];
+}) => {
   displayWindows.map(function (window, i) {
     window.close();
     delete displayWindows[i];
   });
 
   const scenes = await Scene.findAll({ where: { enabled: true } });
-  const scene = scenes[scenes.length - 1];
-  const libraryScenes = await LibraryScene.findAll({
-    where: { sceneId: scene?.id },
-  });
+  const scene = opts ? opts.Scene : scenes[scenes.length - 1];
+  const libraryScenes = opts
+    ? opts.LibraryScenes
+    : await LibraryScene.findAll({
+        where: { sceneId: scene?.id },
+      });
 
-  await asyncForEach(libraryScenes, async (scene: LibraryScene) => {
-    const library = await scene.$get('library');
-    console.log('S', scene.monitors);
+  await asyncForEach(libraryScenes, async (scene: LibraryScene, i: number) => {
+    const library = opts ? opts.items[i] : await scene.$get('library');
+
     if (!scene.monitors?.toString()) return;
     let displayIndex =
       typeof scene?.monitors === 'string'
@@ -81,6 +87,8 @@ export default async () => {
       let url = library?.path;
 
       //  console.log(url, displayIndex);
+
+      console.log('RAN', url, library);
 
       window?.loadURL(
         `file://${__dirname}/index.html?url=${url}&displayIndex=${i}&bg=background-color: rgba(255, 255, 255, 0) !important; background: rgba(255, 255, 255, 0) !important;`

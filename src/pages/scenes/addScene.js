@@ -63,7 +63,6 @@ const AddScene = ({ darkmode }) => {
             const removeIndex = options.findIndex((item) => item.value === selectedOption.value);
             options.splice(removeIndex, 1);
         }
-        setSelectedOption(selectedOption);
         yield setSelectedOptions([...options, { value: 13371337 }]);
         yield setSelectedOptions(options);
     });
@@ -173,6 +172,40 @@ const AddScene = ({ darkmode }) => {
                     }));
                     console.log('WTF');
                     yield renderer_1.ipcRenderer.invoke('cloutTop');
+                }) }, void 0), jsx_runtime_1.jsx(index_1.PrimaryButton, { text: 'Preview Scene', onClick: () => __awaiter(void 0, void 0, void 0, function* () {
+                    const Scene = {
+                        title,
+                        enabled: true,
+                        description,
+                    };
+                    let LibraryScenes = [];
+                    function removeNoneSelectedDocs() {
+                        const items = [];
+                        selectedOptions.map((option) => {
+                            if (!option.label)
+                                return;
+                            const doc = docs[option.label.replaceAll(' ', '')];
+                            items.push(doc);
+                        });
+                        return items;
+                    }
+                    yield functions_1.asyncForEach(selectedOptions, (option, i) => __awaiter(void 0, void 0, void 0, function* () {
+                        if (!option.label)
+                            return;
+                        const monitors = monitorThumb[option.value];
+                        LibraryScenes.push({
+                            libraryId: option === null || option === void 0 ? void 0 : option.value,
+                            sceneId: i,
+                            enabled: true,
+                            monitors: monitors.join(','),
+                        });
+                    }));
+                    console.log('WTF');
+                    yield renderer_1.ipcRenderer.invoke('cloutTop', {
+                        Scene,
+                        LibraryScenes,
+                        items: removeNoneSelectedDocs(),
+                    });
                 }) }, void 0), jsx_runtime_1.jsx(BottomBar_1.default, { buttonNames: ['home', 'library', 'scenes'], darkmode: darkmode }, void 0)] }), void 0));
 };
 exports.AddScene = AddScene;

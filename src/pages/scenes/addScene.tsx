@@ -79,7 +79,7 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
       );
       options.splice(removeIndex, 1);
     }
-    setSelectedOption(selectedOption);
+
     await setSelectedOptions([...options, { value: 13371337 }]);
     await setSelectedOptions(options);
   };
@@ -272,6 +272,50 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
           );
           console.log('WTF');
           await ipcRenderer.invoke('cloutTop');
+        }}
+      />
+      <PrimaryButton
+        text={'Preview Scene'}
+        onClick={async () => {
+          const Scene: SceneCreationAttributes = {
+            title,
+            enabled: true,
+            description,
+          };
+          let LibraryScenes: LibrarySceneCreationAttributes[] = [];
+
+          function removeNoneSelectedDocs() {
+            const items: LibraryAttributes[] = [];
+
+            selectedOptions.map((option) => {
+              if (!option.label) return;
+              const doc = docs[option.label.replaceAll(' ', '')];
+              items.push(doc);
+            });
+
+            return items;
+          }
+
+          await asyncForEach(
+            selectedOptions,
+            async (option: OptionsAttributes, i: number) => {
+              if (!option.label) return;
+              const monitors = monitorThumb[option.value];
+
+              LibraryScenes.push({
+                libraryId: option?.value,
+                sceneId: i,
+                enabled: true,
+                monitors: monitors.join(','),
+              });
+            }
+          );
+          console.log('WTF');
+          await ipcRenderer.invoke('cloutTop', {
+            Scene,
+            LibraryScenes,
+            items: removeNoneSelectedDocs(),
+          });
         }}
       />
       <BottomBar

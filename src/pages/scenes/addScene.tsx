@@ -9,7 +9,7 @@ import { InputFloat } from '../../components/Inputs';
 import { LibrarySceneCreationAttributes } from '../../models/LibraryScene';
 import Side from '../../components/Side';
 
-import { WebviewTag, webviewTag } from 'electron';
+import { asyncForEach } from '../../functions';
 
 const { screen } = remote;
 
@@ -54,7 +54,7 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
       const docs: { [key: string]: LibraryAttributes } = {};
       let optionList: any = [];
       result.map((result: LibraryAttributes) => {
-        docs[result.title] = result;
+        docs[result.title.replaceAll(' ', '')] = result;
         optionList.push({ value: result.id, label: result.title });
       });
       setDocs(docs);
@@ -178,7 +178,15 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
       />
       <div className='grid grid-cols-3 gap-2'>
         {selectedOptions.map(function (selection: any, i) {
-          let foundDoc: LibraryAttributes = docs[selection.label];
+          let title = selection.label;
+
+          try {
+            title = title.replaceAll(' ', '');
+          } catch (e) {
+            console.log(e);
+          }
+
+          let foundDoc: LibraryAttributes = docs[title];
 
           return (
             <div
@@ -226,41 +234,44 @@ export const AddScene: FC<SceneProps> = ({ darkmode }) => {
             type: 'database',
           });
 
-          selectedOptions.map(async (option) => {
-            // const windows = await ipcRenderer.invoke('windows', '');
-            // console.log('WINDOWS', windows);
-            // // const windows = await grabWindows();
-            // windows?.webContents.send(
-            //   'setWallpaper',
-            //   'http://html5wallpaper.com/wp-depo/800/'
-            // );
+          await asyncForEach(
+            selectedOptions,
+            async (option: OptionsAttributes) => {
+              // const windows = await ipcRenderer.invoke('windows', '');
+              // console.log('WINDOWS', windows);
+              // // const windows = await grabWindows();
+              // windows?.webContents.send(
+              //   'setWallpaper',
+              //   'http://html5wallpaper.com/wp-depo/800/'
+              // );
 
-            if (!info.doc) {
-            } else {
-              if (!option.label) return;
-              const monitors = monitorThumb[option.value];
-              console.log('DOC', monitors, option?.value, info.doc.id);
+              if (!info.doc) {
+              } else {
+                if (!option.label) return;
+                const monitors = monitorThumb[option.value];
 
-              const values: LibrarySceneCreationAttributes = {
-                libraryId: option?.value,
-                sceneId: info.doc.id,
-                enabled: true,
-                monitors,
-              };
-              const libraryScene = await ipcRenderer.invoke('apiMain', {
-                values,
-                table: 'LibraryScene',
-                method: 'create',
-                type: 'database',
-              });
-              console.log('DONE', libraryScene);
+                const values: LibrarySceneCreationAttributes = {
+                  libraryId: option?.value,
+                  sceneId: info.doc.id,
+                  enabled: true,
+                  monitors,
+                };
+                const libraryScene = await ipcRenderer.invoke('apiMain', {
+                  values,
+                  table: 'LibraryScene',
+                  method: 'create',
+                  type: 'database',
+                });
+              }
+
+              // ipcRenderer.send(
+              //   'setWallpaper',
+              //   'http://html5wallpaper.com/wp-depo/800/'
+              // );
             }
-
-            // ipcRenderer.send(
-            //   'setWallpaper',
-            //   'http://html5wallpaper.com/wp-depo/800/'
-            // );
-          });
+          );
+          console.log('WTF');
+          await ipcRenderer.invoke('cloutTop');
         }}
       />
       <BottomBar

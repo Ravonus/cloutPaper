@@ -5,7 +5,7 @@ export const renderInputHandle = function (webview: any) {
     let { x, y } = result;
 
     webview.sendInputEvent({
-      type: 'mousedown',
+      type: 'mouseDown',
       x,
       y,
       button: 'left',
@@ -15,7 +15,7 @@ export const renderInputHandle = function (webview: any) {
 
   ipcRenderer.on('mouseup', (event, result) => {
     let { x, y } = result;
-
+    console.log(x, y, webview);
     webview.sendInputEvent({
       type: 'mouseup',
       x,
@@ -26,28 +26,31 @@ export const renderInputHandle = function (webview: any) {
   });
 
   ipcRenderer.on('keydown', (event, keyCode) => {
+    console.log(keyCode, 'WTF', webview);
     webview.sendInputEvent({
-      type: keyCode.length > 1 ? 'keyUp' : 'char',
+      type: keyCode.length > 1 ? 'keyDown' : 'char',
       keyCode,
     });
   });
 
-  ipcRenderer.on('keyup', (event, keyInfo) => {
-    const keyCode = keyInfo.rawcode.toString();
-
+  ipcRenderer.on('keyup', (event, keyCode) => {
     // var evt = new KeyboardEvent('keyup', { keyCode });
     // document.dispatchEvent(evt);
-    webview.sendInputEvent({
-      type: 'char',
-      keyCode,
-    });
+    if (keyCode.length > 1) {
+      webview.sendInputEvent({
+        type: 'keyUp',
+        keyCode,
+      });
+    }
   });
 
   ipcRenderer.on('mousemove', (event, result) => {
     const { x, y } = result;
 
+    console.log('ERT', result);
+
     webview.sendInputEvent({
-      type: 'mousemove',
+      type: 'mouseMove',
       x,
       y,
     });

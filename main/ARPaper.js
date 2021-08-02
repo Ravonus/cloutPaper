@@ -20,9 +20,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
 const sendIpc_1 = __importDefault(require("../src/ipc/sendIpc"));
-const cloutTop_1 = __importDefault(require("../src/windows/cloutTop"));
+const cloutTop_1 = __importDefault(require("../src/ipc/cloutTop"));
+const cloutTop_2 = __importDefault(require("../src/windows/cloutTop"));
 let connectionId;
-console.log('masd', __dirname);
 const { emit, getIpc, ipcStart, ipcRegisterModels, } = require(`${__dirname}/ipc`);
 // ipcStart.default({
 //   models: path.join(
@@ -34,9 +34,10 @@ const { emit, getIpc, ipcStart, ipcRegisterModels, } = require(`${__dirname}/ipc
 //   ),
 //   type: 'addModels',
 // });
+sendIpc_1.default;
+cloutTop_1.default;
 function init() {
     return __awaiter(this, void 0, void 0, function* () {
-        sendIpc_1.default;
         const registration = yield ipcStart({ id: connectionId });
         yield ipcRegisterModels({
             models: [
@@ -61,7 +62,7 @@ function init() {
         //   type: 'addModels',
         // });
         // ipcMain.inv('setWallpaper');
-        cloutTop_1.default();
+        cloutTop_2.default();
     });
 }
 function default_1(id) {

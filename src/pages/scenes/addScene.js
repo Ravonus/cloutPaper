@@ -21,6 +21,7 @@ const renderer_1 = require("electron/renderer");
 const index_1 = require("../../components/buttons/index");
 const Inputs_1 = require("../../components/Inputs");
 const Side_1 = __importDefault(require("../../components/Side"));
+const functions_1 = require("../../functions");
 const { screen } = renderer_1.remote;
 const AddScene = ({ darkmode }) => {
     const [options, setOptions] = react_1.useState([]);
@@ -42,7 +43,7 @@ const AddScene = ({ darkmode }) => {
             const docs = {};
             let optionList = [];
             result.map((result) => {
-                docs[result.title] = result;
+                docs[result.title.replaceAll(' ', '')] = result;
                 optionList.push({ value: result.id, label: result.title });
             });
             setDocs(docs);
@@ -105,7 +106,14 @@ const AddScene = ({ darkmode }) => {
                                         className: 'absolute top-0 left-0 cursor-pointer w-32 h-32 overflow-hidden cursor-pointer border-secondary dark:border-primary border hover:border-primary dark:border dark:hover:border-secondary' }, void 0)] }), `displayThumb-${i}`)) : (jsx_runtime_1.jsx("div", Object.assign({ id: `displayThumb-${i}`, style: { fontSize: 100, textAlign: 'center' }, className: 'cursor-pointer m-4 w-32 h-32 px-4 overflow-hidden bg-gray-200 dark:bg-gray-600 border-secondary dark:border-primary border hover:border-primary dark:border dark:hover:border-secondary hover:bg-gray-300 dark:hover:bg-gray-500', onClick: () => handleThumbClick(i) }, { children: jsx_runtime_1.jsxs("span", { children: [" ", i + 1] }, void 0) }), `displayThumb-${i}`));
                         }
                     }) }), void 0) }), void 0), jsx_runtime_1.jsx("div", Object.assign({ className: 'pt-5', style: { width: 350 } }, { children: jsx_runtime_1.jsx(react_select_1.default, { value: selectedOption, onChange: handleChange, options: options }, void 0) }), void 0), jsx_runtime_1.jsx(Inputs_1.InputFloat, { label: 'Title', name: 'title', id: 'title', value: title, setValue: setTitle }, void 0), jsx_runtime_1.jsx(Inputs_1.InputFloat, { label: 'Description', name: 'Description', id: 'Description', value: description, setValue: setDescription }, void 0), jsx_runtime_1.jsx("div", Object.assign({ className: 'grid grid-cols-3 gap-2' }, { children: selectedOptions.map(function (selection, i) {
-                    let foundDoc = docs[selection.label];
+                    let title = selection.label;
+                    try {
+                        title = title.replaceAll(' ', '');
+                    }
+                    catch (e) {
+                        console.log(e);
+                    }
+                    let foundDoc = docs[title];
                     return (jsx_runtime_1.jsxs("div", Object.assign({ className: 'bg-gray-300 dark:bg-gray-600 group relative cursor-pointer' }, { children: [jsx_runtime_1.jsx("webview", { style: {
                                     border: 'none',
                                     minWidth: 128,
@@ -131,7 +139,7 @@ const AddScene = ({ darkmode }) => {
                         method: 'create',
                         type: 'database',
                     });
-                    selectedOptions.map((option) => __awaiter(void 0, void 0, void 0, function* () {
+                    yield functions_1.asyncForEach(selectedOptions, (option) => __awaiter(void 0, void 0, void 0, function* () {
                         // const windows = await ipcRenderer.invoke('windows', '');
                         // console.log('WINDOWS', windows);
                         // // const windows = await grabWindows();
@@ -145,7 +153,6 @@ const AddScene = ({ darkmode }) => {
                             if (!option.label)
                                 return;
                             const monitors = monitorThumb[option.value];
-                            console.log('DOC', monitors, option === null || option === void 0 ? void 0 : option.value, info.doc.id);
                             const values = {
                                 libraryId: option === null || option === void 0 ? void 0 : option.value,
                                 sceneId: info.doc.id,
@@ -158,13 +165,14 @@ const AddScene = ({ darkmode }) => {
                                 method: 'create',
                                 type: 'database',
                             });
-                            console.log('DONE', libraryScene);
                         }
                         // ipcRenderer.send(
                         //   'setWallpaper',
                         //   'http://html5wallpaper.com/wp-depo/800/'
                         // );
                     }));
+                    console.log('WTF');
+                    yield renderer_1.ipcRenderer.invoke('cloutTop');
                 }) }, void 0), jsx_runtime_1.jsx(BottomBar_1.default, { buttonNames: ['home', 'library', 'scenes'], darkmode: darkmode }, void 0)] }), void 0));
 };
 exports.AddScene = AddScene;

@@ -5,15 +5,13 @@
  * @copyright TechnomancyIT
  */
 
-import { ipcMain } from 'electron';
 import path from 'path';
 import sendIpc from '../src/ipc/sendIpc';
+import cloutTop from '../src/ipc/cloutTop';
 import wp from '../src/windows/cloutTop';
-import { setIpcId, setRelationships } from './ipc';
 
 let connectionId: string;
 
-console.log('masd', __dirname);
 const {
   emit,
   getIpc,
@@ -32,8 +30,10 @@ const {
 //   type: 'addModels',
 // });
 
+sendIpc;
+cloutTop;
+
 async function init() {
-  sendIpc;
   const registration = await ipcStart({ id: connectionId });
 
   await ipcRegisterModels({

@@ -1,4 +1,4 @@
-export { AddImage } from './addImage';
-export { Library } from './library';
-export { AddUrl } from './addUrl';
-export { AddVideo } from './addVideo';
+export { AddImage } from './AddImage';
+export { Library } from './Library';
+export { AddUrl } from './AddUrl';
+export { AddVideo } from './AddVideo';

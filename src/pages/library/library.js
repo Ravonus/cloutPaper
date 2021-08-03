@@ -17,7 +17,8 @@ const jsx_runtime_1 = require("react/jsx-runtime");
 const electron_1 = require("electron");
 const react_1 = require("react");
 const BottomBar_1 = __importDefault(require("../../components/BottomBar"));
-const Library = ({ darkmode }) => {
+const Overlays_1 = require("../Overlays");
+const Library = ({ darkmode, overlay }) => {
     const [items, setItems] = react_1.useState([]);
     react_1.useEffect(() => {
         (() => __awaiter(void 0, void 0, void 0, function* () {
@@ -28,7 +29,7 @@ const Library = ({ darkmode }) => {
             setItems(result);
         }))();
     }, []);
-    return (jsx_runtime_1.jsxs("div", Object.assign({ className: 'text-center l flex flex-col justify justify-center dark:text-primary' }, { children: [jsx_runtime_1.jsx("div", Object.assign({ className: 'container grid grid-cols-3 gap-4' }, { children: items.map((opt, i) => {
+    return (jsx_runtime_1.jsxs("div", Object.assign({ className: 'text-center l flex flex-col justify justify-center dark:text-primary' }, { children: [overlay && overlay['plugins_ARPaper_library'] ? (jsx_runtime_1.jsx(Overlays_1.FileUploadOverlay, {}, void 0)) : null, jsx_runtime_1.jsx("div", Object.assign({ className: 'container grid grid-cols-3 gap-4' }, { children: items.map((opt, i) => {
                     return (jsx_runtime_1.jsx("div", { children: jsx_runtime_1.jsx("div", { children: opt.title }, void 0) }, `plugin-${opt.title}-${i}`));
                 }) }), void 0), jsx_runtime_1.jsx(BottomBar_1.default, { buttonNames: ['home', 'scenes', 'addImage', 'addUrl', 'addVideo'], darkmode: darkmode }, void 0)] }), void 0));
 };

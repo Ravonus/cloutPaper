@@ -1,2 +1,2 @@
-export { Scenes } from './scenes';
-export { AddScene } from './addScene';
+export { Scenes } from './Scenes';
+export { AddScene } from './AddScene';

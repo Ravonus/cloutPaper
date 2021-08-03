@@ -2,12 +2,14 @@ import { ipcRenderer } from 'electron';
 import { useEffect, useState } from 'react';
 import { FC } from 'react';
 import BottomBar from '../../components/BottomBar';
+import { FileUploadOverlay } from '../Overlays';
 
 interface MainProps {
   darkmode: boolean;
+  overlay: any;
 }
 
-export const Library: FC<MainProps> = ({ darkmode }) => {
+export const Library: FC<MainProps> = ({ darkmode, overlay }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -23,6 +25,9 @@ export const Library: FC<MainProps> = ({ darkmode }) => {
 
   return (
     <div className='text-center l flex flex-col justify justify-center dark:text-primary'>
+      {overlay && overlay['plugins_ARPaper_library'] ? (
+        <FileUploadOverlay />
+      ) : null}
       <div className='container grid grid-cols-3 gap-4'>
         {items.map((opt: any, i: number) => {
           return (

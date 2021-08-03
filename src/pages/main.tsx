@@ -1,10 +1,12 @@
 console.log('I RUNS');
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FC } from 'react';
 import { NavLink } from 'react-router-dom';
 import ReactTooltip from 'react-tooltip';
+import { useHistory } from 'react-router';
 
+import { getMaterialFileIcon } from 'file-extension-icon-js';
 // //Database models
 
 import { Scenes, AddScene } from './scenes/';
@@ -12,6 +14,7 @@ import { Scenes, AddScene } from './scenes/';
 import { Library, AddImage, AddUrl, AddVideo } from './library/';
 
 import BottomBar from '../components/BottomBar';
+import { FileUploadOverlay } from './Overlays';
 
 interface MainProps {
   setRoute: Function;
@@ -21,36 +24,6 @@ interface MainProps {
   darkmode: boolean;
 }
 
-let entered = 0;
-
-const dragover = (e: DragEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-};
-
-const dragenter = (event: DragEvent) => {
-  if (entered !== 0) console.log('File is in the Drop Space');
-
-  entered = 1;
-};
-
-const dragleave = (event: DragEvent) => {
-  if (entered === 0) console.log('File has left the Drop Space');
-  else entered--;
-};
-
-const drop = (event: DragEvent) => {
-  event.preventDefault();
-  event.stopPropagation();
-
-  if (!event.dataTransfer) return;
-
-  for (const f of event?.dataTransfer.files) {
-    // Using the path attribute to get absolute file path
-    console.log('File Path of dragged files: ', f.path);
-  }
-};
-
 const Main: FC<MainProps> = ({
   setRoute,
   setRoutePage,
@@ -58,6 +31,7 @@ const Main: FC<MainProps> = ({
   addPluginMenu,
   darkmode,
 }) => {
+  const history = useHistory();
   const menu = [
     {
       name: 'plugins_ARPaper_scenes',
@@ -125,23 +99,41 @@ const Main: FC<MainProps> = ({
     },
   ];
 
+  const drop = (event: DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!event.dataTransfer) return;
+
+    for (const f of event?.dataTransfer.files) {
+      // Using the path attribute to get absolute file path
+      const logo = getMaterialFileIcon(f.name);
+      console.log(logo);
+      const type = f.type.split('/')[0];
+
+      switch (type) {
+        case 'image':
+          history.push('/plugins_ARPaper_library');
+
+        default:
+          break;
+      }
+
+      console.log('File Path of dragged files: main ', f.path);
+    }
+  };
+
+  document.removeEventListener('drag', drop);
+  document.addEventListener('drop', drop);
+
   useEffect(() => {
-    document.removeEventListener('dragover', dragover);
-    document.removeEventListener('dragenter', dragenter);
-    document.removeEventListener('dragleave', dragleave);
-    document.removeEventListener('drag', drop);
-
-    document.addEventListener('dragover', dragover);
-    document.addEventListener('dragenter', dragenter);
-    document.addEventListener('dragleave', dragleave);
-    document.addEventListener('drop', drop);
-
     addPluginMenu(menu[1], 'plugins_ARPaper_library', {
       route: {
         name: 'library',
         path: '/plugins_ARPaper_library',
         component: 'Library',
       },
+
       component: Library,
     });
     addPluginMenu(menu[0], 'plugins_ARPaper_scenes', {
